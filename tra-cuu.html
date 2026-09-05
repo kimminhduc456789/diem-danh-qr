@@ -62,28 +62,37 @@
         let html = `<div class="section-title">👤 THÔNG TIN CÁ NHÂN</div><div>`;
         
         // Hiển thị các thông tin cơ bản
+        // CODE MỚI: Tự động chuyển ngày sinh thành dạng DD/MM/YYYY
         const personalKeys = ["Mã HS", "Tên thánh, Họ và Tên", "Ngày sinh", "Nơi ở", "Tên thánh, bố hoặc mẹ", "sdt"];
         personalKeys.forEach(key => {
             if (info[key] !== undefined) {
-                html += `
-                    <div class="info-row">
-                        <span class="label">${key}:</span>
-                        <span class="val">${info[key]}</span>
-                    </div>
-                `;
-            }
-        });
-        html += `</div>`;
+                let displayVal = info[key];
 
-        // Hiển thị Điểm số
-        html += `<div class="section-title">📊 KẾT QUẢ HỌC TẬP</div><div>`;
-        const scoreKeys = ["điểm kt miệng", "điểm kt viết", "điểm thi học kỳ 1"];
-        scoreKeys.forEach(key => {
-            if (info[key] !== undefined) {
+                // Nếu là trường Ngày sinh -> Định dạng chuẩn DD/MM/YYYY
+                if (key === "Ngày sinh" && displayVal && displayVal !== "Chưa cập nhật") {
+                    let dateObj = new Date(displayVal);
+                    if (!isNaN(dateObj.getTime())) {
+                        let day = String(dateObj.getDate()).padStart(2, '0');
+                        let month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        let year = dateObj.getFullYear();
+                        displayVal = `${day}/${month}/${year}`;
+                    } else if (typeof displayVal === 'string') {
+                        // Trường hợp chuỗi ngày dạng D/M/YYYY
+                        let cleanStr = displayVal.split(" ")[0]; // Bỏ phần giờ nếu có
+                        let parts = cleanStr.split(/[\/\-]/);
+                        if (parts.length === 3) {
+                            let day = parts[0].padStart(2, '0');
+                            let month = parts[1].padStart(2, '0');
+                            let year = parts[2];
+                            displayVal = `${day}/${month}/${year}`;
+                        }
+                    }
+                }
+
                 html += `
                     <div class="info-row">
                         <span class="label">${key}:</span>
-                        <span class="val" style="color: #d9534f;">${info[key]}</span>
+                        <span class="val">${displayVal}</span>
                     </div>
                 `;
             }
