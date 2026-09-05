@@ -4,26 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Điểm Danh QR Code</title>
-    <!-- Thư viện quét mã QR -->
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Thư viện giải mã QR siêu nhẹ -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <style>
         body { 
             font-family: Arial, sans-serif; 
             background: #f0f2f5; 
-            padding: 20px; 
+            padding: 15px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
+            margin: 0;
         }
         .card { 
             background: white; 
-            padding: 25px; 
+            padding: 20px; 
             border-radius: 12px; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
             max-width: 450px; 
             width: 100%; 
             text-align: center; 
-            margin-bottom: 20px; 
             box-sizing: border-box;
         }
         input, select, button { 
@@ -42,23 +42,52 @@
             border: none; 
             cursor: pointer; 
         }
-        button:hover { 
-            background-color: #0056b3; 
+        .hidden { display: none; }
+        
+        #video-container {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 250px;
+            margin: 10px auto;
+            border: 3px solid #007bff;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
         }
-        .hidden { 
-            display: none; 
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        #reader { 
-            width: 100%; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            margin-top: 10px; 
-        }
-        #status { 
-            margin: 10px 0; 
+        
+        /* KHU VỰC THÔNG BÁO */
+        #status-box { 
+            margin: 12px 0; 
+            padding: 10px;
+            border-radius: 8px;
             font-weight: bold; 
-            color: #28a745; 
+            font-size: 16px;
+            background-color: #e9ecef;
+            color: #333;
+            transition: all 0.3s ease;
         }
+        .status-success {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+            border: 1px solid #f5c6cb;
+        }
+        .status-loading {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeeba;
+        }
+
         ul { 
             list-style: none; 
             padding: 0; 
@@ -67,12 +96,13 @@
             overflow-y: auto; 
         }
         li { 
-            background: #e9ecef; 
             padding: 10px; 
             margin-bottom: 6px; 
             border-radius: 6px; 
             font-size: 14px; 
         }
+        .li-success { background: #e2f0d9; }
+        .li-error { background: #fce4d6; }
     </style>
 </head>
 <body>
@@ -86,7 +116,7 @@
     <div id="login-msg" style="color: red; margin-top: 10px;"></div>
 </div>
 
-<!-- MÀN HÌNH QUÉT MÃ QR (ẨN KHI CHƯA ĐĂNG NHẬP) -->
+<!-- MÀN HÌNH QUÉT MÃ QR -->
 <div id="app-section" class="card hidden">
     <h2>Điểm Danh QR Code</h2>
     <p>Xin chào: <strong id="user-display"></strong></p>
@@ -99,8 +129,13 @@
         <option value="Tuần 4">Tuần 4</option>
     </select>
 
-    <div id="status">Sẵn sàng quét...</div>
-    <div id="reader"></div>
+    <!-- Khung thông báo trạng thái -->
+    <div id="status-box">Đang mở camera...</div>
+    
+    <div id="video-container">
+        <video id="video" playsinline></video>
+    </div>
+    <canvas id="canvas" class="hidden"></canvas>
 
     <h3 style="text-align: left; margin-top: 20px;">Lịch sử quét:</h3>
     <ul id="result-list"></ul>
@@ -109,11 +144,12 @@
 </div>
 
 <script>
-    // ĐƯỜNG LINK GOOGLE APPS SCRIPT CỦA BẠN
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec";
 
     let currentUserEmail = "";
     const scannedSet = new Set();
+    let videoStream = null;
+    let isScanning = false;
 
     function handleLogin() {
         const email = document.getElementById('user-email').value.trim();
@@ -123,8 +159,7 @@
             return;
         }
 
-        msgDiv.style.color = "#007bff";
-        msgDiv.innerText = "Đang kiểm tra quyền truy cập...";
+        msgDiv.innerText = "Đang kiểm tra quyền...";
 
         fetch(SCRIPT_URL, {
             method: "POST",
@@ -137,72 +172,127 @@
                 currentUserEmail = email;
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('app-section').classList.remove('hidden');
-                document.getElementById('user-display').innerText = data.name + " (" + email + ")";
-                startScanner();
+                document.getElementById('user-display').innerText = data.name;
+                startCamera();
             } else {
-                msgDiv.style.color = "red";
                 msgDiv.innerText = data.message;
             }
         })
-        .catch(err => {
-            msgDiv.style.color = "red";
+        .catch(() => {
             msgDiv.innerText = "Lỗi kết nối máy chủ!";
         });
     }
 
-    function startScanner() {
-        const html5QrCode = new Html5Qrcode("reader");
-        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-            if (scannedSet.has(decodedText)) return;
-            scannedSet.add(decodedText);
-
-            const week = document.getElementById('week-select').value;
-            document.getElementById('status').innerText = "Đang ghi nhận dữ liệu...";
-
-            fetch(SCRIPT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({
-                    action: "attendance",
-                    email: currentUserEmail,
-                    qrData: decodedText,
-                    tuan: week
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    document.getElementById('status').innerText = "✅ Điểm danh thành công!";
-                    addToList(data.maHS, data.name, week);
-                }
-            })
-            .catch(() => {
-                document.getElementById('status').innerText = "❌ Lỗi lưu dữ liệu!";
-            });
-
-            // Giới hạn quét trùng mã trong vòng 4 giây
-            setTimeout(() => scannedSet.delete(decodedText), 4000);
-        };
-
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-        // Tự động kích hoạt Camera Sau (environment)
-        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+    function startCamera() {
+        const video = document.getElementById('video');
+        
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+            videoStream = stream;
+            video.srcObject = stream;
+            video.setAttribute("playsinline", true);
+            video.play();
+            isScanning = true;
+            setStatus("Sẵn sàng quét mã QR...", "normal");
+            requestAnimationFrame(tick);
+        })
         .catch(err => {
-            // Nếu thiết bị không nhận camera sau thì chuyển sang camera trước
-            html5QrCode.start({ facingMode: "user" }, config, qrCodeSuccessCallback);
+            setStatus("⚠️ Không mở được camera!", "error");
         });
     }
 
-    function addToList(maHS, hoTen, tuan) {
+    function tick() {
+        if (!isScanning) return;
+
+        const video = document.getElementById('video');
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+            });
+
+            if (code && code.data) {
+                onQRCodeScanned(code.data);
+            }
+        }
+        requestAnimationFrame(tick);
+    }
+
+    function setStatus(text, type) {
+        const statusBox = document.getElementById('status-box');
+        statusBox.innerText = text;
+        statusBox.className = ""; // Reset class
+        
+        if (type === "success") statusBox.classList.add('status-success');
+        else if (type === "error") statusBox.classList.add('status-error');
+        else if (type === "loading") statusBox.classList.add('status-loading');
+        else statusBox.id = "status-box";
+    }
+
+    function onQRCodeScanned(qrData) {
+        if (scannedSet.has(qrData)) return;
+        scannedSet.add(qrData);
+
+        const week = document.getElementById('week-select').value;
+        setStatus("⏳ Đang kiểm tra dữ liệu...", "loading");
+
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+                action: "attendance",
+                email: currentUserEmail,
+                qrData: qrData,
+                tuan: week
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                // ĐIỂM DANH THÀNH CÔNG -> Hiện ô màu xanh lá
+                setStatus(`✅ ${data.name} (${data.maHS}) - Điểm danh thành công!`, "success");
+                addToList(data.maHS, data.name, week, true);
+            } else {
+                // ĐÃ ĐIỂM DANH RỒI HOẶC BỊ LỖI -> Hiện ô màu đỏ báo lỗi
+                setStatus(data.message, "error");
+                addToList(qrData, data.message, week, false);
+            }
+        })
+        .catch(() => {
+            setStatus("❌ Lỗi kết nối mạng!", "error");
+        });
+
+        // Sau 3 giây gỡ khóa để có thể quét học sinh tiếp theo
+        setTimeout(() => {
+            scannedSet.delete(qrData);
+        }, 3000);
+    }
+
+    function addToList(maHS, titleInfo, tuan, isSuccess) {
         const list = document.getElementById('result-list');
         const item = document.createElement('li');
         const now = new Date().toLocaleTimeString('vi-VN');
-        item.innerHTML = `<strong>${hoTen}</strong> (${maHS}) - <em>${tuan}</em> [${now}]`;
+        
+        if (isSuccess) {
+            item.className = "li-success";
+            item.innerHTML = `✅ <strong>${titleInfo}</strong> (${maHS}) - <em>${tuan}</em> [${now}]`;
+        } else {
+            item.className = "li-error";
+            item.innerHTML = `❌ <strong>${titleInfo}</strong> - <em>${tuan}</em> [${now}]`;
+        }
         list.insertBefore(item, list.firstChild);
     }
 
     function logout() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
         location.reload();
     }
 </script>
