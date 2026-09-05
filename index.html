@@ -4,18 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Điểm Danh QR Code</title>
+    <!-- Thư viện quét mã QR -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 450px; width: 100%; text-align: center; margin-bottom: 20px; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
-        button { background-color: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .hidden { display: none; }
-        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-top: 10px; }
-        #status { margin: 10px 0; font-weight: bold; color: #28a745; }
-        ul { list-style: none; padding: 0; text-align: left; max-height: 200px; overflow-y: auto; }
-        li { background: #e9ecef; padding: 10px; margin-bottom: 6px; border-radius: 6px; font-size: 14px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f0f2f5; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            max-width: 450px; 
+            width: 100%; 
+            text-align: center; 
+            margin-bottom: 20px; 
+            box-sizing: border-box;
+        }
+        input, select, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            font-size: 15px; 
+        }
+        button { 
+            background-color: #007bff; 
+            color: white; 
+            font-weight: bold; 
+            border: none; 
+            cursor: pointer; 
+        }
+        button:hover { 
+            background-color: #0056b3; 
+        }
+        .hidden { 
+            display: none; 
+        }
+        #reader { 
+            width: 100%; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            margin-top: 10px; 
+        }
+        #status { 
+            margin: 10px 0; 
+            font-weight: bold; 
+            color: #28a745; 
+        }
+        ul { 
+            list-style: none; 
+            padding: 0; 
+            text-align: left; 
+            max-height: 200px; 
+            overflow-y: auto; 
+        }
+        li { 
+            background: #e9ecef; 
+            padding: 10px; 
+            margin-bottom: 6px; 
+            border-radius: 6px; 
+            font-size: 14px; 
+        }
     </style>
 </head>
 <body>
@@ -29,7 +86,7 @@
     <div id="login-msg" style="color: red; margin-top: 10px;"></div>
 </div>
 
-<!-- MÀN HÌNH QUÉT QR -->
+<!-- MÀN HÌNH QUÉT MÃ QR (ẨN KHI CHƯA ĐĂNG NHẬP) -->
 <div id="app-section" class="card hidden">
     <h2>Điểm Danh QR Code</h2>
     <p>Xin chào: <strong id="user-display"></strong></p>
@@ -52,12 +109,11 @@
 </div>
 
 <script>
-    // THAY LINK WEB APP APPS SCRIPT CỦA BẠN VÀO DƯỚI ĐÂY
+    // ĐƯỜNG LINK GOOGLE APPS SCRIPT CỦA BẠN
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec";
 
     let currentUserEmail = "";
     const scannedSet = new Set();
-    let html5QrcodeScanner;
 
     function handleLogin() {
         const email = document.getElementById('user-email').value.trim();
@@ -95,40 +151,47 @@
     }
 
     function startScanner() {
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } });
-        html5QrcodeScanner.render(onScanSuccess, () => {});
-    }
+        const html5QrCode = new Html5Qrcode("reader");
+        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+            if (scannedSet.has(decodedText)) return;
+            scannedSet.add(decodedText);
 
-    function onScanSuccess(decodedText) {
-        if (scannedSet.has(decodedText)) return;
+            const week = document.getElementById('week-select').value;
+            document.getElementById('status').innerText = "Đang ghi nhận dữ liệu...";
 
-        scannedSet.add(decodedText);
-        const week = document.getElementById('week-select').value;
-        
-        document.getElementById('status').innerText = "Đang ghi nhận dữ liệu...";
-
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-                action: "attendance",
-                email: currentUserEmail,
-                qrData: decodedText,
-                tuan: week
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    action: "attendance",
+                    email: currentUserEmail,
+                    qrData: decodedText,
+                    tuan: week
+                })
             })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === "success") {
-                document.getElementById('status').innerText = "✅ Điểm danh thành công!";
-                addToList(data.maHS, data.name, week);
-            }
-        })
-        .catch(() => {
-            document.getElementById('status').innerText = "❌ Lỗi lưu dữ liệu!";
-        });
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    document.getElementById('status').innerText = "✅ Điểm danh thành công!";
+                    addToList(data.maHS, data.name, week);
+                }
+            })
+            .catch(() => {
+                document.getElementById('status').innerText = "❌ Lỗi lưu dữ liệu!";
+            });
 
-        setTimeout(() => scannedSet.delete(decodedText), 4000);
+            // Giới hạn quét trùng mã trong vòng 4 giây
+            setTimeout(() => scannedSet.delete(decodedText), 4000);
+        };
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        // Tự động kích hoạt Camera Sau (environment)
+        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+        .catch(err => {
+            // Nếu thiết bị không nhận camera sau thì chuyển sang camera trước
+            html5QrCode.start({ facingMode: "user" }, config, qrCodeSuccessCallback);
+        });
     }
 
     function addToList(maHS, hoTen, tuan) {
