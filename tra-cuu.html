@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Liên Lạc Điện Tử</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: #f4f6f9; padding: 12px; margin: 0; display: flex; justify-content: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); max-width: 480px; width: 100%; box-sizing: border-box; }
+        .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 12px; margin-bottom: 15px; }
+        .header h2 { margin: 0; color: #007bff; font-size: 20px; text-transform: uppercase; }
+        .header p { margin: 4px 0 0; color: #666; font-size: 13px; }
+        
+        .section-title { font-size: 15px; font-weight: bold; color: #0056b3; margin-top: 18px; margin-bottom: 10px; background: #eef5ff; padding: 8px 12px; border-radius: 6px; border-left: 4px solid #007bff; }
+        
+        .info-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
+        .info-row span.label { font-weight: 500; color: #555; }
+        .info-row span.val { color: #111; font-weight: 600; text-align: right; }
+        
+        .badge-success { background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .loading { text-align: center; padding: 30px; font-size: 15px; color: #666; }
+        .error { color: #dc3545; text-align: center; padding: 20px; font-weight: bold; background: #f8d7da; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h2>Sổ Liên Lạc Điện Tử</h2>
+        <p>Tra cứu thông tin & kết quả học tập</p>
+    </div>
+
+    <div id="content">
+        <div class="loading">⏳ Đang lấy dữ liệu học sinh...</div>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const maHS = urlParams.get('ma');
+
+    if (!maHS) {
+        document.getElementById('content').innerHTML = `<div class="error">❌ Mã QR không đúng cấu trúc!</div>`;
+    } else {
+        fetch(`${SCRIPT_URL}?ma=${encodeURIComponent(maHS)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                renderData(data.info, data.attendance);
+            } else {
+                document.getElementById('content').innerHTML = `<div class="error">❌ ${data.message}</div>`;
+            }
+        })
+        .catch(() => {
+            document.getElementById('content').innerHTML = `<div class="error">❌ Lỗi kết nối máy chủ!</div>`;
+        });
+    }
+
+    function renderData(info, attendance) {
+        let html = `<div class="section-title">👤 THÔNG TIN CÁ NHÂN</div><div>`;
+        
+        // Hiển thị các thông tin cơ bản
+        const personalKeys = ["Mã HS", "Tên thánh, Họ và Tên", "Ngày sinh", "Nơi ở", "Tên thánh, bố hoặc mẹ", "sdt"];
+        personalKeys.forEach(key => {
+            if (info[key] !== undefined) {
+                html += `
+                    <div class="info-row">
+                        <span class="label">${key}:</span>
+                        <span class="val">${info[key]}</span>
+                    </div>
+                `;
+            }
+        });
+        html += `</div>`;
+
+        // Hiển thị Điểm số
+        html += `<div class="section-title">📊 KẾT QUẢ HỌC TẬP</div><div>`;
+        const scoreKeys = ["điểm kt miệng", "điểm kt viết", "điểm thi học kỳ 1"];
+        scoreKeys.forEach(key => {
+            if (info[key] !== undefined) {
+                html += `
+                    <div class="info-row">
+                        <span class="label">${key}:</span>
+                        <span class="val" style="color: #d9534f;">${info[key]}</span>
+                    </div>
+                `;
+            }
+        });
+        html += `</div>`;
+
+        // Hiển thị Điểm danh
+        html += `<div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>`;
+        if (attendance.length === 0) {
+            html += `<p style="color: #777; font-size: 13px; text-align: center; margin: 15px 0;">Chưa có dữ liệu điểm danh.</p>`;
+        } else {
+            html += `<div>`;
+            attendance.forEach(item => {
+                html += `
+                    <div class="info-row">
+                        <span class="label">${item.tuan} (${item.thoiGian}):</span>
+                        <span class="badge-success">Có mặt</span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+
+        document.getElementById('content').innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
