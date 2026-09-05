@@ -61,30 +61,25 @@
     function renderData(info, attendance) {
         let html = `<div class="section-title">👤 THÔNG TIN CÁ NHÂN</div><div>`;
         
-        // Hiển thị các thông tin cơ bản
-        // CODE MỚI: Tự động chuyển ngày sinh thành dạng DD/MM/YYYY
+        // Cột thông tin cá nhân cơ bản
         const personalKeys = ["Mã HS", "Tên thánh, Họ và Tên", "Ngày sinh", "Nơi ở", "Tên thánh, bố hoặc mẹ", "sdt"];
+        
         personalKeys.forEach(key => {
             if (info[key] !== undefined) {
                 let displayVal = info[key];
 
-                // Nếu là trường Ngày sinh -> Định dạng chuẩn DD/MM/YYYY
+                // Xử lý riêng trường Ngày sinh chuẩn DD/MM/YYYY
                 if (key === "Ngày sinh" && displayVal && displayVal !== "Chưa cập nhật") {
-                    let dateObj = new Date(displayVal);
-                    if (!isNaN(dateObj.getTime())) {
-                        let day = String(dateObj.getDate()).padStart(2, '0');
-                        let month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                        let year = dateObj.getFullYear();
-                        displayVal = `${day}/${month}/${year}`;
-                    } else if (typeof displayVal === 'string') {
-                        // Trường hợp chuỗi ngày dạng D/M/YYYY
-                        let cleanStr = displayVal.split(" ")[0]; // Bỏ phần giờ nếu có
-                        let parts = cleanStr.split(/[\/\-]/);
-                        if (parts.length === 3) {
-                            let day = parts[0].padStart(2, '0');
-                            let month = parts[1].padStart(2, '0');
-                            let year = parts[2];
-                            displayVal = `${day}/${month}/${year}`;
+                    let strVal = String(displayVal).split(" ")[0].trim();
+                    let parts = strVal.split(/[\/\-]/);
+                    
+                    if (parts.length === 3) {
+                        // Nếu dạng YYYY-MM-DD
+                        if (parts[0].length === 4) {
+                            displayVal = `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+                        } else {
+                            // Dạng DD/MM/YYYY
+                            displayVal = `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[2]}`;
                         }
                     }
                 }
@@ -99,16 +94,39 @@
         });
         html += `</div>`;
 
-        // Hiển thị Điểm danh
+        // Tự động tìm và hiển thị tất cả các cột Điểm số (mọi cột chứa từ 'điểm' hoặc 'kt')
+        html += `<div class="section-title">📊 KẾT QUẢ HỌC TẬP</div><div>`;
+        let hasScores = false;
+
+        for (let key in info) {
+            let lowerKey = key.toLowerCase();
+            if (!personalKeys.includes(key) && (lowerKey.includes("điểm") || lowerKey.includes("kt") || lowerKey.includes("thi"))) {
+                hasScores = true;
+                html += `
+                    <div class="info-row">
+                        <span class="label">${key}:</span>
+                        <span class="val" style="color: #d9534f;">${info[key]}</span>
+                    </div>
+                `;
+            }
+        }
+
+        if (!hasScores) {
+            html += `<p style="color: #777; font-size: 13px; text-align: center; margin: 10px 0;">Chưa có dữ liệu điểm số.</p>`;
+        }
+        html += `</div>`;
+
+        // Hiển thị Điểm danh chuyên cần (chỉ lấy ngày, bỏ giờ)
         html += `<div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>`;
         if (attendance.length === 0) {
-            html += `<p style="color: #777; font-size: 13px; text-align: center; margin: 15px 0;">Chưa có dữ liệu điểm danh.</p>`;
+            html += `<p style="color: #777; font-size: 13px; text-align: center; margin: 10px 0;">Chưa có dữ liệu điểm danh.</p>`;
         } else {
             html += `<div>`;
             attendance.forEach(item => {
+                let ngayDiemDanh = item.thoiGian ? item.thoiGian.split(' ')[0] : '';
                 html += `
                     <div class="info-row">
-                        <span class="label">${item.tuan} (${item.thoiGian}):</span>
+                        <span class="label">${item.tuan} (${ngayDiemDanh}):</span>
                         <span class="badge-success">Có mặt</span>
                     </div>
                 `;
