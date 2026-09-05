@@ -1,1 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Điểm Danh QR Code</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 450px; width: 100%; text-align: center; margin-bottom: 20px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
+        button { background-color: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .hidden { display: none; }
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+        #status { margin: 10px 0; font-weight: bold; color: #28a745; }
+        ul { list-style: none; padding: 0; text-align: left; max-height: 200px; overflow-y: auto; }
+        li { background: #e9ecef; padding: 10px; margin-bottom: 6px; border-radius: 6px; font-size: 14px; }
+    </style>
+</head>
+<body>
 
+<!-- MÀN HÌNH ĐĂNG NHẬP -->
+<div id="login-section" class="card">
+    <h2>Đăng Nhập Điểm Danh</h2>
+    <p>Nhập email được cấp quyền để tiếp tục</p>
+    <input type="email" id="user-email" placeholder="Nhập Gmail của bạn..." required>
+    <button onclick="handleLogin()">Xác Nhận Đăng Nhập</button>
+    <div id="login-msg" style="color: red; margin-top: 10px;"></div>
+</div>
+
+<!-- MÀN HÌNH QUÉT QR -->
+<div id="app-section" class="card hidden">
+    <h2>Điểm Danh QR Code</h2>
+    <p>Xin chào: <strong id="user-display"></strong></p>
+    
+    <label for="week-select" style="display:block; text-align:left; font-weight:bold;">Chọn tuần điểm danh:</label>
+    <select id="week-select">
+        <option value="Tuần 1">Tuần 1</option>
+        <option value="Tuần 2">Tuần 2</option>
+        <option value="Tuần 3">Tuần 3</option>
+        <option value="Tuần 4">Tuần 4</option>
+    </select>
+
+    <div id="status">Sẵn sàng quét...</div>
+    <div id="reader"></div>
+
+    <h3 style="text-align: left; margin-top: 20px;">Lịch sử quét:</h3>
+    <ul id="result-list"></ul>
+    
+    <button onclick="logout()" style="background-color: #dc3545; margin-top: 15px;">Đăng xuất</button>
+</div>
+
+<script>
+    // THAY LINK WEB APP APPS SCRIPT CỦA BẠN VÀO DƯỚI ĐÂY
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec";
+
+    let currentUserEmail = "";
+    const scannedSet = new Set();
+    let html5QrcodeScanner;
+
+    function handleLogin() {
+        const email = document.getElementById('user-email').value.trim();
+        const msgDiv = document.getElementById('login-msg');
+        if (!email) {
+            msgDiv.innerText = "Vui lòng nhập Email!";
+            return;
+        }
+
+        msgDiv.style.color = "#007bff";
+        msgDiv.innerText = "Đang kiểm tra quyền truy cập...";
+
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "login", email: email })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                currentUserEmail = email;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('app-section').classList.remove('hidden');
+                document.getElementById('user-display').innerText = data.name + " (" + email + ")";
+                startScanner();
+            } else {
+                msgDiv.style.color = "red";
+                msgDiv.innerText = data.message;
+            }
+        })
+        .catch(err => {
+            msgDiv.style.color = "red";
+            msgDiv.innerText = "Lỗi kết nối máy chủ!";
+        });
+    }
+
+    function startScanner() {
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } });
+        html5QrcodeScanner.render(onScanSuccess, () => {});
+    }
+
+    function onScanSuccess(decodedText) {
+        if (scannedSet.has(decodedText)) return;
+
+        scannedSet.add(decodedText);
+        const week = document.getElementById('week-select').value;
+        
+        document.getElementById('status').innerText = "Đang ghi nhận dữ liệu...";
+
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+                action: "attendance",
+                email: currentUserEmail,
+                qrData: decodedText,
+                tuan: week
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                document.getElementById('status').innerText = "✅ Điểm danh thành công!";
+                addToList(data.maHS, data.name, week);
+            }
+        })
+        .catch(() => {
+            document.getElementById('status').innerText = "❌ Lỗi lưu dữ liệu!";
+        });
+
+        setTimeout(() => scannedSet.delete(decodedText), 4000);
+    }
+
+    function addToList(maHS, hoTen, tuan) {
+        const list = document.getElementById('result-list');
+        const item = document.createElement('li');
+        const now = new Date().toLocaleTimeString('vi-VN');
+        item.innerHTML = `<strong>${hoTen}</strong> (${maHS}) - <em>${tuan}</em> [${now}]`;
+        list.insertBefore(item, list.firstChild);
+    }
+
+    function logout() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
