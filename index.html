@@ -4,26 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Điểm Danh Học Sinh</title>
-    <!-- Thư viện quét mã QR Html5-QRCode -->
+    <!-- Thư viện Html5-QRCode -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background-color: #eef2f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .container { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 450px; width: 100%; box-sizing: border-box; }
-        h2 { text-align: center; color: #007bff; margin-top: 0; font-size: 22px; text-transform: uppercase; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 420px; width: 100%; }
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; margin-bottom: 20px; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .user-info { background: #e8f4fd; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; color: #0056b3; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #007bff; }
-        .btn-logout { background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .user-info { background: #e8f0fe; padding: 10px 14px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; color: #1967d2; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
         .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; font-size: 14px; color: #333; display: block; margin-bottom: 6px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-        button.btn-primary { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        button.btn-primary:hover { background: #0056b3; }
+        label { font-weight: 600; font-size: 13px; color: #444; display: block; margin-bottom: 6px; }
+        input, select { width: 100%; padding: 12px; border: 1.5px solid #dadce0; border-radius: 8px; font-size: 15px; background: #fff; outline: none; transition: border-color 0.2s; }
+        input:focus, select:focus { border-color: #1a73e8; }
+        
+        button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        button.btn-primary:active { background: #1557b0; }
 
-        #reader { width: 100%; margin-top: 15px; border-radius: 8px; overflow: hidden; }
-        #result { margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 15px; display: none; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        /* Khung Camera & Quét */
+        #scanner-wrapper { display: none; margin-top: 15px; position: relative; border-radius: 12px; overflow: hidden; background: #000; }
+        #reader { width: 100%; border: none !important; }
+        #reader video { border-radius: 12px; object-fit: cover; }
+
+        /* Thẻ kết quả thông báo */
+        #result { margin-top: 15px; padding: 14px; border-radius: 10px; text-align: center; font-weight: 600; font-size: 14px; display: none; line-height: 1.4; }
+        .success { background-color: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
+        .error { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; }
+        .info { background-color: #e8f0fe; color: #1967d2; border: 1px solid #d2e3fc; }
         
         .hidden { display: none !important; }
     </style>
@@ -31,13 +40,13 @@
 <body>
 
 <div class="container">
-    <h2>Điểm Danh QR Code</h2>
+    <h2>Điểm Danh Học Sinh</h2>
 
-    <!-- KHỐI ĐĂNG NHẬP -->
+    <!-- ĐĂNG NHẬP -->
     <div id="loginSection">
         <div class="form-group">
-            <label>Nhập Email Giáo Viên / Huynh Trưởng:</label>
-            <input type="email" id="userEmail" placeholder="ví dụ: kimminhduc270203@gmail.com">
+            <label>Email Người Điểm Danh:</label>
+            <input type="email" id="userEmail" placeholder="kimminhduc270203@gmail.com">
         </div>
         <button class="btn-primary" onclick="login()">Đăng Nhập</button>
     </div>
@@ -45,14 +54,13 @@
     <!-- KHỐI ĐIỂM DANH -->
     <div id="attendanceSection" class="hidden">
         <div class="user-info">
-            <span>Xin chào: <strong id="userName"></strong></span>
+            <span>👤 <strong id="userName"></strong></span>
             <button class="btn-logout" onclick="logout()">Đăng xuất</button>
         </div>
 
         <div class="form-group">
-            <label>Chọn Ngày Điểm Danh:</label>
+            <label>Ngày Điểm Danh:</label>
             <select id="selectTuan">
-                <!-- Danh sách ngày khớp chính xác tiêu đề trên Google Sheets -->
                 <optgroup label="Tháng 9">
                     <option value="6/9">6/9</option>
                     <option value="13/9">13/9</option>
@@ -68,9 +76,12 @@
             </select>
         </div>
 
-        <button class="btn-primary" id="btnStartScan" onclick="startScanner()">📷 Mở Camera Quét Mã</button>
+        <button class="btn-primary" id="btnToggleScan" onclick="toggleScanner()">📷 Mở Camera Quét Mã</button>
         
-        <div id="reader"></div>
+        <div id="scanner-wrapper">
+            <div id="reader"></div>
+        </div>
+
         <div id="result"></div>
     </div>
 </div>
@@ -78,10 +89,10 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec";
     
-    let html5QrcodeScanner = null;
+    let html5QrCode = null;
+    let isScanning = false;
     let isProcessing = false;
 
-    // Kiểm tra đăng nhập
     window.onload = function() {
         const savedEmail = localStorage.getItem("userEmail");
         const savedName = localStorage.getItem("userName");
@@ -111,16 +122,12 @@
                 alert(data.message);
             }
         })
-        .catch(err => {
-            alert("Lỗi kết nối máy chủ!");
-        });
+        .catch(() => alert("Lỗi kết nối máy chủ!"));
     }
 
     function logout() {
+        stopScanner();
         localStorage.clear();
-        if(html5QrcodeScanner) {
-            html5QrcodeScanner.clear();
-        }
         document.getElementById("loginSection").classList.remove("hidden");
         document.getElementById("attendanceSection").classList.add("hidden");
     }
@@ -131,21 +138,57 @@
         document.getElementById("attendanceSection").classList.remove("hidden");
     }
 
+    function toggleScanner() {
+        if (isScanning) {
+            stopScanner();
+        } else {
+            startScanner();
+        }
+    }
+
     function startScanner() {
-        document.getElementById("btnStartScan").classList.add("hidden");
+        const wrapper = document.getElementById("scanner-wrapper");
+        const btn = document.getElementById("btnToggleScan");
         
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: { width: 250, height: 250 } }
-        );
-        
-        html5QrcodeScanner.render(onScanSuccess);
+        wrapper.style.display = "block";
+        btn.innerText = "❌ Tắt Camera";
+        btn.style.background = "#5f6368";
+
+        html5QrCode = new Html5Qrcode("reader");
+
+        // ÉP BẮT BUỘC SỬ DỤNG CAMERA SAU ({ facingMode: "environment" })
+        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            config, 
+            onScanSuccess
+        ).then(() => {
+            isScanning = true;
+        }).catch(err => {
+            showResult("❌ Không thể mở Camera sau! Vui lòng cấp quyền truy cập.", "error");
+            stopScanner();
+        });
+    }
+
+    function stopScanner() {
+        if (html5QrCode && isScanning) {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                isScanning = false;
+                document.getElementById("scanner-wrapper").style.display = "none";
+                const btn = document.getElementById("btnToggleScan");
+                btn.innerText = "📷 Mở Camera Quét Mã";
+                btn.style.background = "#1a73e8";
+            }).catch(err => console.log(err));
+        }
     }
 
     function onScanSuccess(decodedText) {
         if (isProcessing) return;
         isProcessing = true;
 
-        showResult("⏳ Đang xử lý điểm danh...", "success");
+        showResult("⏳ Đang ghi nhận điểm danh...", "info");
 
         const email = localStorage.getItem("userEmail");
         const tuan = document.getElementById("selectTuan").value;
@@ -162,21 +205,22 @@
         .then(res => res.json())
         .then(data => {
             if (data.status === "success") {
-                showResult(`✅ Thành công! ${data.name} (${data.maHS})`, "success");
+                showResult(`🎉 Điểm danh THÀNH CÔNG!<br><strong>${data.name}</strong> (${data.maHS})`, "success");
             } else {
                 showResult(data.message, "error");
             }
+            // Chờ 2.5 giây để quét học sinh tiếp theo
             setTimeout(() => { isProcessing = false; }, 2500);
         })
-        .catch(err => {
-            showResult("❌ Lỗi gửi dữ liệu!", "error");
+        .catch(() => {
+            showResult("❌ Lỗi kết nối mạng!", "error");
             setTimeout(() => { isProcessing = false; }, 2500);
         });
     }
 
     function showResult(msg, type) {
         const resDiv = document.getElementById("result");
-        resDiv.innerText = msg;
+        resDiv.innerHTML = msg;
         resDiv.className = type;
         resDiv.style.display = "block";
     }
