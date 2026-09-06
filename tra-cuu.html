@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sổ Liên Lạc Điện Tử</title>
     <style>
-        body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: #f4f6f9; padding: 12px; margin: 0; display: flex; justify-content: center; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); max-width: 480px; width: 100%; box-sizing: border-box; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f4f6f9; padding: 12px; margin: 0; display: flex; justify-content: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); max-width: 480px; width: 100%; }
         .header { text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 12px; margin-bottom: 15px; }
         .header h2 { margin: 0; color: #007bff; font-size: 20px; text-transform: uppercase; }
         .header p { margin: 4px 0 0; color: #666; font-size: 13px; }
         
         .section-title { font-size: 15px; font-weight: bold; color: #0056b3; margin-top: 18px; margin-bottom: 10px; background: #eef5ff; padding: 8px 12px; border-radius: 6px; border-left: 4px solid #007bff; }
         
-        .info-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
         .info-row span.label { font-weight: 500; color: #555; }
         .info-row span.val { color: #111; font-weight: 600; text-align: right; }
+        .info-row span.score-val { color: #d9534f; font-weight: 700; font-size: 15px; }
         
         .badge-success { background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .loading { text-align: center; padding: 30px; font-size: 15px; color: #666; }
@@ -31,7 +33,7 @@
     </div>
 
     <div id="content">
-        <div class="loading">⏳ Đang lấy dữ liệu học sinh...</div>
+        <div class="loading">⏳ Đang tải dữ liệu điểm số & học sinh...</div>
     </div>
 </div>
 
@@ -42,7 +44,7 @@
     const maHS = urlParams.get('ma');
 
     if (!maHS) {
-        document.getElementById('content').innerHTML = `<div class="error">❌ Mã QR không đúng cấu trúc!</div>`;
+        document.getElementById('content').innerHTML = `<div class="error">❌ Mã QR tra cứu không hợp lệ!</div>`;
     } else {
         fetch(`${SCRIPT_URL}?ma=${encodeURIComponent(maHS)}`)
         .then(res => res.json())
@@ -54,7 +56,7 @@
             }
         })
         .catch(() => {
-            document.getElementById('content').innerHTML = `<div class="error">❌ Lỗi kết nối máy chủ!</div>`;
+            document.getElementById('content').innerHTML = `<div class="error">❌ Không thể kết nối với máy chủ!</div>`;
         });
     }
 
@@ -72,8 +74,8 @@
     }
 
     function renderData(info, scores, attendance) {
-        let html = `<div class="section-title">👤 THÔNG TIN CÁ NHÂN</div><div>`;
-        
+        // 1. HIỂN THỊ THÔNG TIN CÁ NHÂN
+        let html = `<div class="section-title">👤 THÔNG TIN HỌC SINH</div><div>`;
         for (let key in info) {
             let val = info[key];
             if (key.toLowerCase().includes("ngày sinh")) {
@@ -88,6 +90,7 @@
         }
         html += `</div>`;
 
+        // 2. HIỂN THỊ BẢNG ĐIỂM HỌC TẬP
         html += `<div class="section-title">📊 KẾT QUẢ HỌC TẬP</div><div>`;
         let hasScores = false;
 
@@ -96,7 +99,7 @@
             html += `
                 <div class="info-row">
                     <span class="label">${scoreKey}:</span>
-                    <span class="val" style="color: #d9534f;">${scores[scoreKey]}</span>
+                    <span class="score-val">${scores[scoreKey]}</span>
                 </div>
             `;
         }
@@ -106,9 +109,10 @@
         }
         html += `</div>`;
 
+        // 3. HIỂN THỊ LỊCH SỬ ĐIỂM DANH
         html += `<div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>`;
         if (!attendance || attendance.length === 0) {
-            html += `<p style="color: #777; font-size: 13px; text-align: center; margin: 10px 0;">Chưa có dữ liệu điểm danh.</p>`;
+            html += `<p style="color: #777; font-size: 13px; text-align: center; margin: 10px 0;">Chưa có lịch sử điểm danh.</p>`;
         } else {
             html += `<div>`;
             attendance.forEach(item => {
