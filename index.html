@@ -23,12 +23,12 @@
         button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button.btn-primary:active { background: #1557b0; }
 
-        /* Khung Camera & Quét */
-        #scanner-wrapper { display: none; margin-top: 15px; position: relative; border-radius: 12px; overflow: hidden; background: #000; }
+        /* Khung Camera nằm ngang tiết kiệm diện tích */
+        #scanner-wrapper { margin-top: 15px; border-radius: 12px; overflow: hidden; background: #000; }
         #reader { width: 100%; border: none !important; }
         #reader video { border-radius: 12px; object-fit: cover; }
 
-        /* Thẻ kết quả thông báo */
+        /* Thẻ thông báo kết quả */
         #result { margin-top: 15px; padding: 14px; border-radius: 10px; text-align: center; font-weight: 600; font-size: 14px; display: none; line-height: 1.4; }
         .success { background-color: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
         .error { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; }
@@ -42,7 +42,7 @@
 <div class="container">
     <h2>Điểm Danh Học Sinh</h2>
 
-    <!-- ĐĂNG NHẬP -->
+    <!-- KHỐI ĐĂNG NHẬP -->
     <div id="loginSection">
         <div class="form-group">
             <label>Email Người Điểm Danh:</label>
@@ -76,8 +76,7 @@
             </select>
         </div>
 
-        <button class="btn-primary" id="btnToggleScan" onclick="toggleScanner()">📷 Mở Camera Quét Mã</button>
-        
+        <!-- Khung Camera hiển thị trực tiếp -->
         <div id="scanner-wrapper">
             <div id="reader"></div>
         </div>
@@ -90,7 +89,6 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec";
     
     let html5QrCode = null;
-    let isScanning = false;
     let isProcessing = false;
 
     window.onload = function() {
@@ -136,50 +134,35 @@
         document.getElementById("userName").innerText = name;
         document.getElementById("loginSection").classList.add("hidden");
         document.getElementById("attendanceSection").classList.remove("hidden");
-    }
-
-    function toggleScanner() {
-        if (isScanning) {
-            stopScanner();
-        } else {
-            startScanner();
-        }
+        
+        // Tự động kích hoạt Camera sau khi hiển thị giao diện điểm danh
+        startScanner();
     }
 
     function startScanner() {
-        const wrapper = document.getElementById("scanner-wrapper");
-        const btn = document.getElementById("btnToggleScan");
-        
-        wrapper.style.display = "block";
-        btn.innerText = "❌ Tắt Camera";
-        btn.style.background = "#5f6368";
+        if (html5QrCode) {
+            stopScanner();
+        }
 
         html5QrCode = new Html5Qrcode("reader");
 
-        // ÉP BẮT BUỘC SỬ DỤNG CAMERA SAU ({ facingMode: "environment" })
-        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+        // Khung quét kích thước nằm ngang (Width: 280, Height: 160)
+        const config = { fps: 10, qrbox: { width: 280, height: 160 } };
 
+        // Ép bắt buộc mở Camera sau ({ facingMode: "environment" })
         html5QrCode.start(
             { facingMode: "environment" }, 
             config, 
             onScanSuccess
-        ).then(() => {
-            isScanning = true;
-        }).catch(err => {
-            showResult("❌ Không thể mở Camera sau! Vui lòng cấp quyền truy cập.", "error");
-            stopScanner();
+        ).catch(err => {
+            showResult("❌ Vui lòng cấp quyền truy cập Camera trên trình duyệt để tiếp tục!", "error");
         });
     }
 
     function stopScanner() {
-        if (html5QrCode && isScanning) {
+        if (html5QrCode) {
             html5QrCode.stop().then(() => {
                 html5QrCode.clear();
-                isScanning = false;
-                document.getElementById("scanner-wrapper").style.display = "none";
-                const btn = document.getElementById("btnToggleScan");
-                btn.innerText = "📷 Mở Camera Quét Mã";
-                btn.style.background = "#1a73e8";
             }).catch(err => console.log(err));
         }
     }
@@ -209,7 +192,7 @@
             } else {
                 showResult(data.message, "error");
             }
-            // Chờ 2.5 giây để quét học sinh tiếp theo
+            // Tạm dừng 2.5 giây rồi tiếp tục quét học sinh tiếp theo
             setTimeout(() => { isProcessing = false; }, 2500);
         })
         .catch(() => {
