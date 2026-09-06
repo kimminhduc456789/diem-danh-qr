@@ -48,7 +48,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.status === "success") {
-                renderData(data.info, data.attendance);
+                renderData(data.info, data.scores, data.attendance);
             } else {
                 document.getElementById('content').innerHTML = `<div class="error">❌ ${data.message}</div>`;
             }
@@ -58,7 +58,6 @@
         });
     }
 
-    // Hàm thêm số 0 vào trước ngày/tháng có 1 chữ số (ví dụ 1/2/2003 -> 01/02/2003)
     function formatDDMMYYYY(str) {
         if (!str || str === "Chưa cập nhật") return str;
         let clean = String(str).split(" ")[0].trim();
@@ -72,42 +71,34 @@
         return str;
     }
 
-    function renderData(info, attendance) {
+    function renderData(info, scores, attendance) {
         let html = `<div class="section-title">👤 THÔNG TIN CÁ NHÂN</div><div>`;
         
-        // 1. Cột thông tin cá nhân
-        const personalKeys = ["Mã HS", "Tên thánh, Họ và Tên", "Ngày sinh", "Nơi ở", "Tên thánh, bố hoặc mẹ", "sdt"];
-        
-        personalKeys.forEach(key => {
-            if (info[key] !== undefined) {
-                let val = info[key];
-                if (key === "Ngày sinh") {
-                    val = formatDDMMYYYY(val);
-                }
-                html += `
-                    <div class="info-row">
-                        <span class="label">${key}:</span>
-                        <span class="val">${val}</span>
-                    </div>
-                `;
+        for (let key in info) {
+            let val = info[key];
+            if (key.toLowerCase().includes("ngày sinh")) {
+                val = formatDDMMYYYY(val);
             }
-        });
+            html += `
+                <div class="info-row">
+                    <span class="label">${key}:</span>
+                    <span class="val">${val}</span>
+                </div>
+            `;
+        }
         html += `</div>`;
 
-        // 2. Cột Điểm Số (Lấy các cột còn lại không nằm trong Thông tin cá nhân)
         html += `<div class="section-title">📊 KẾT QUẢ HỌC TẬP</div><div>`;
         let hasScores = false;
 
-        for (let key in info) {
-            if (!personalKeys.includes(key)) {
-                hasScores = true;
-                html += `
-                    <div class="info-row">
-                        <span class="label">${key}:</span>
-                        <span class="val" style="color: #d9534f;">${info[key]}</span>
-                    </div>
-                `;
-            }
+        for (let scoreKey in scores) {
+            hasScores = true;
+            html += `
+                <div class="info-row">
+                    <span class="label">${scoreKey}:</span>
+                    <span class="val" style="color: #d9534f;">${scores[scoreKey]}</span>
+                </div>
+            `;
         }
 
         if (!hasScores) {
@@ -115,17 +106,15 @@
         }
         html += `</div>`;
 
-        // 3. Điểm danh chuyên cần
         html += `<div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>`;
-        if (attendance.length === 0) {
+        if (!attendance || attendance.length === 0) {
             html += `<p style="color: #777; font-size: 13px; text-align: center; margin: 10px 0;">Chưa có dữ liệu điểm danh.</p>`;
         } else {
             html += `<div>`;
             attendance.forEach(item => {
-                let ngayDiemDanh = item.thoiGian ? item.thoiGian.split(' ')[0] : '';
                 html += `
                     <div class="info-row">
-                        <span class="label">${item.tuan} (${ngayDiemDanh}):</span>
+                        <span class="label">Ngày ${item.tuan}:</span>
                         <span class="badge-success">Có mặt</span>
                     </div>
                 `;
