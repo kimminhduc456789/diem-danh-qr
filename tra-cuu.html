@@ -58,49 +58,48 @@
         });
     }
 
+    // Hàm thêm số 0 vào trước ngày/tháng có 1 chữ số (ví dụ 1/2/2003 -> 01/02/2003)
+    function formatDDMMYYYY(str) {
+        if (!str || str === "Chưa cập nhật") return str;
+        let clean = String(str).split(" ")[0].trim();
+        let parts = clean.split(/[\/\-]/);
+        if (parts.length === 3) {
+            let day = parts[0].padStart(2, '0');
+            let month = parts[1].padStart(2, '0');
+            let year = parts[2];
+            return `${day}/${month}/${year}`;
+        }
+        return str;
+    }
+
     function renderData(info, attendance) {
         let html = `<div class="section-title">👤 THÔNG TIN CÁ NHÂN</div><div>`;
         
-        // Cột thông tin cá nhân cơ bản
+        // 1. Cột thông tin cá nhân
         const personalKeys = ["Mã HS", "Tên thánh, Họ và Tên", "Ngày sinh", "Nơi ở", "Tên thánh, bố hoặc mẹ", "sdt"];
         
         personalKeys.forEach(key => {
             if (info[key] !== undefined) {
-                let displayVal = info[key];
-
-                // Xử lý riêng trường Ngày sinh chuẩn DD/MM/YYYY
-                if (key === "Ngày sinh" && displayVal && displayVal !== "Chưa cập nhật") {
-                    let strVal = String(displayVal).split(" ")[0].trim();
-                    let parts = strVal.split(/[\/\-]/);
-                    
-                    if (parts.length === 3) {
-                        // Nếu dạng YYYY-MM-DD
-                        if (parts[0].length === 4) {
-                            displayVal = `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
-                        } else {
-                            // Dạng DD/MM/YYYY
-                            displayVal = `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[2]}`;
-                        }
-                    }
+                let val = info[key];
+                if (key === "Ngày sinh") {
+                    val = formatDDMMYYYY(val);
                 }
-
                 html += `
                     <div class="info-row">
                         <span class="label">${key}:</span>
-                        <span class="val">${displayVal}</span>
+                        <span class="val">${val}</span>
                     </div>
                 `;
             }
         });
         html += `</div>`;
 
-        // Tự động tìm và hiển thị tất cả các cột Điểm số (mọi cột chứa từ 'điểm' hoặc 'kt')
+        // 2. Cột Điểm Số (Lấy các cột còn lại không nằm trong Thông tin cá nhân)
         html += `<div class="section-title">📊 KẾT QUẢ HỌC TẬP</div><div>`;
         let hasScores = false;
 
         for (let key in info) {
-            let lowerKey = key.toLowerCase();
-            if (!personalKeys.includes(key) && (lowerKey.includes("điểm") || lowerKey.includes("kt") || lowerKey.includes("thi"))) {
+            if (!personalKeys.includes(key)) {
                 hasScores = true;
                 html += `
                     <div class="info-row">
@@ -116,7 +115,7 @@
         }
         html += `</div>`;
 
-        // Hiển thị Điểm danh chuyên cần (chỉ lấy ngày, bỏ giờ)
+        // 3. Điểm danh chuyên cần
         html += `<div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>`;
         if (attendance.length === 0) {
             html += `<p style="color: #777; font-size: 13px; text-align: center; margin: 10px 0;">Chưa có dữ liệu điểm danh.</p>`;
