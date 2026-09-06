@@ -4,31 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Điểm Danh Học Sinh</title>
-    <!-- Thư viện Html5-QRCode -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 420px; width: 100%; }
-        h2 { text-align: center; color: #1a73e8; margin-top: 0; margin-bottom: 20px; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; margin-bottom: 20px; font-size: 20px; font-weight: 700; text-transform: uppercase; }
         
         .user-info { background: #e8f0fe; padding: 10px 14px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; color: #1967d2; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
         .btn-logout { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
         .form-group { margin-bottom: 15px; }
         label { font-weight: 600; font-size: 13px; color: #444; display: block; margin-bottom: 6px; }
-        input, select { width: 100%; padding: 12px; border: 1.5px solid #dadce0; border-radius: 8px; font-size: 15px; background: #fff; outline: none; transition: border-color 0.2s; }
-        input:focus, select:focus { border-color: #1a73e8; }
+        input, select { width: 100%; padding: 12px; border: 1.5px solid #dadce0; border-radius: 8px; font-size: 15px; background: #fff; outline: none; }
         
-        button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        button.btn-primary:active { background: #1557b0; }
+        button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        /* Khung Camera nằm ngang tiết kiệm diện tích */
-        #scanner-wrapper { margin-top: 15px; border-radius: 12px; overflow: hidden; background: #000; }
+        /* KHUNG CAMERA CHỮ NHẬT NẰM NGANG TIẾT KIỆM DIỆN TÍCH */
+        #scanner-wrapper { margin-top: 15px; border-radius: 12px; overflow: hidden; background: #000; position: relative; }
         #reader { width: 100%; border: none !important; }
-        #reader video { border-radius: 12px; object-fit: cover; }
+        
+        /* Ép tỉ lệ khung hình chuẩn ngang 16:9 */
+        #reader video { 
+            width: 100% !important; 
+            height: 180px !important; 
+            object-fit: cover !important; 
+            border-radius: 12px; 
+        }
 
-        /* Thẻ thông báo kết quả */
         #result { margin-top: 15px; padding: 14px; border-radius: 10px; text-align: center; font-weight: 600; font-size: 14px; display: none; line-height: 1.4; }
         .success { background-color: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
         .error { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; }
@@ -76,7 +79,7 @@
             </select>
         </div>
 
-        <!-- Khung Camera hiển thị trực tiếp -->
+        <!-- Khung Camera nằm ngang -->
         <div id="scanner-wrapper">
             <div id="reader"></div>
         </div>
@@ -135,7 +138,6 @@
         document.getElementById("loginSection").classList.add("hidden");
         document.getElementById("attendanceSection").classList.remove("hidden");
         
-        // Tự động kích hoạt Camera sau khi hiển thị giao diện điểm danh
         startScanner();
     }
 
@@ -146,16 +148,15 @@
 
         html5QrCode = new Html5Qrcode("reader");
 
-        // Khung quét kích thước nằm ngang (Width: 280, Height: 160)
-        const config = { fps: 10, qrbox: { width: 280, height: 160 } };
+        // Khung quét nằm ngang chuẩn kích thước 260px x 130px
+        const config = { fps: 10, qrbox: { width: 260, height: 130 } };
 
-        // Ép bắt buộc mở Camera sau ({ facingMode: "environment" })
         html5QrCode.start(
             { facingMode: "environment" }, 
             config, 
             onScanSuccess
         ).catch(err => {
-            showResult("❌ Vui lòng cấp quyền truy cập Camera trên trình duyệt để tiếp tục!", "error");
+            showResult("❌ Hãy cho phép truy cập Camera để quét mã!", "error");
         });
     }
 
@@ -192,7 +193,6 @@
             } else {
                 showResult(data.message, "error");
             }
-            // Tạm dừng 2.5 giây rồi tiếp tục quét học sinh tiếp theo
             setTimeout(() => { isProcessing = false; }, 2500);
         })
         .catch(() => {
