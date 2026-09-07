@@ -54,7 +54,7 @@
 <div class="container">
     <h2>Điểm Danh Học Sinh</h2>
 
-    <!-- ĐĂNG NHẬP (Luôn hiện khi bắt đầu) -->
+    <!-- KHỐI ĐĂNG NHẬP (Luôn hiển thị đầu tiên) -->
     <div id="loginSection">
         <div class="form-group">
             <label>Email Người Điểm Danh:</label>
@@ -63,7 +63,7 @@
         <button class="btn-primary" onclick="login()">Đăng Nhập</button>
     </div>
 
-    <!-- MÀN HÌNH QUÉT -->
+    <!-- KHỐI QUÉT MÃ -->
     <div id="attendanceSection" class="hidden">
         <div class="user-info">
             <span>👤 <strong id="userName"></strong></span>
@@ -115,10 +115,9 @@
             return;
         }
 
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "login", email: email })
-        })
+        const url = `${SCRIPT_URL}?action=login&email=${encodeURIComponent(email)}`;
+
+        fetch(url)
         .then(res => res.json())
         .then(data => {
             if (data.status === "success") {
@@ -129,7 +128,7 @@
             }
         })
         .catch(err => {
-            alert("Lỗi kết nối máy chủ! Vui lòng kiểm tra lại mạng.");
+            alert("Không thể kết nối máy chủ! Vui lòng thử lại.");
         });
     }
 
@@ -188,16 +187,9 @@
         showResult("⏳ Đang ghi nhận điểm danh...", "info");
 
         const tuan = document.getElementById("selectTuan").value;
+        const url = `${SCRIPT_URL}?action=attendance&email=${encodeURIComponent(currentUserEmail)}&tuan=${encodeURIComponent(tuan)}&qrData=${encodeURIComponent(decodedText)}`;
 
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                action: "attendance",
-                email: currentUserEmail,
-                tuan: tuan,
-                qrData: decodedText
-            })
-        })
+        fetch(url)
         .then(res => res.json())
         .then(data => {
             if (data.status === "success") {
