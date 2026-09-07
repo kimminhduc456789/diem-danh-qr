@@ -20,15 +20,15 @@
         .info-label { color: #5f6368; }
         .info-value { font-weight: 600; color: #202124; text-align: right; }
 
+        .grade-item, .attendance-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 13px; }
         .attendance-list { max-height: 250px; overflow-y: auto; }
-        .attendance-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 13px; }
         
-        /* SHAPE HIỂN THỊ TRẠNG THÁI */
         .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
         .badge-present { background-color: #e6f4ea; color: #137333; }
         .badge-late { background-color: #fff3cd; color: #856404; }
         .badge-permission { background-color: #cce5ff; color: #004085; }
         .badge-absent { background-color: #fce8e6; color: #c5221f; }
+        .score-val { font-weight: bold; color: #d93025; font-size: 14px; }
 
         .error-box { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; padding: 15px; border-radius: 10px; text-align: center; font-weight: 600; font-size: 14px; }
         .loading { text-align: center; padding: 30px 0; color: #1a73e8; font-weight: 600; font-size: 14px; }
@@ -47,7 +47,7 @@
     <div id="error" class="error-box hidden"></div>
 
     <div id="content" class="hidden">
-        <!-- THÔNG TIN HỌC SINH -->
+        <!-- 1. THÔNG TIN HỌC SINH -->
         <div class="card">
             <div class="card-title">👤 THÔNG TIN HỌC SINH</div>
             <div class="info-item"><span class="info-label">Mã học sinh:</span><span class="info-value" id="stMaHS">---</span></div>
@@ -55,9 +55,16 @@
             <div class="info-item"><span class="info-label">Ngày sinh:</span><span class="info-value" id="stDob">---</span></div>
             <div class="info-item"><span class="info-label">Lớp:</span><span class="info-value" id="stClass">---</span></div>
             <div class="info-item"><span class="info-label">Phụ huynh:</span><span class="info-value" id="stParent">---</span></div>
+            <div class="info-item"><span class="info-label">Số điện thoại:</span><span class="info-value" id="stPhone">---</span></div>
         </div>
 
-        <!-- ĐIỂM DANH CHUYÊN CẦN -->
+        <!-- 2. KẾT QUẢ HỌC TẬP -->
+        <div class="card">
+            <div class="card-title">📊 KẾT QUẢ HỌC TẬP</div>
+            <div id="gradesList"></div>
+        </div>
+
+        <!-- 3. ĐIỂM DANH CHUYÊN CẦN -->
         <div class="card">
             <div class="card-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>
             <div class="attendance-list" id="attendanceList"></div>
@@ -83,17 +90,33 @@
             document.getElementById("loading").classList.add("hidden");
 
             if (data.status === "success") {
-                // Hiển thị thông tin học sinh
+                // Hiển thị đầy đủ Thông tin học sinh
                 document.getElementById("stMaHS").innerText = data.student.maHS || "---";
                 document.getElementById("stName").innerText = data.student.name || "---";
                 document.getElementById("stDob").innerText = data.student.dob || "---";
                 document.getElementById("stClass").innerText = data.student.className || "---";
                 document.getElementById("stParent").innerText = data.student.parentName || "---";
+                document.getElementById("stPhone").innerText = data.student.phone || "---";
 
-                // Hiển thị lịch sử điểm danh chuyên cần
+                // Hiển thị Điểm số
+                const gradesDiv = document.getElementById("gradesList");
+                gradesDiv.innerHTML = "";
+                if (data.grades && data.grades.length > 0) {
+                    data.grades.forEach(g => {
+                        gradesDiv.innerHTML += `
+                            <div class="grade-item">
+                                <span>${g.subject}:</span>
+                                <span class="score-val">${g.score}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    gradesDiv.innerHTML = "<div style='text-align:center; color:#777; padding:8px;'>Chưa có dữ liệu điểm số.</div>";
+                }
+
+                // Hiển thị Chuyên cần
                 const listDiv = document.getElementById("attendanceList");
                 listDiv.innerHTML = "";
-
                 if (data.attendance && data.attendance.length > 0) {
                     data.attendance.forEach(item => {
                         let badgeClass = "badge-absent";
@@ -111,7 +134,7 @@
                         `;
                     });
                 } else {
-                    listDiv.innerHTML = "<div style='text-align:center; color:#777; padding:10px;'>Chưa có dữ liệu điểm danh.</div>";
+                    listDiv.innerHTML = "<div style='text-align:center; color:#777; padding:8px;'>Chưa có dữ liệu điểm danh.</div>";
                 }
 
                 document.getElementById("content").classList.remove("hidden");
