@@ -14,7 +14,17 @@
         .user-info { background: #e8f0fe; padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 13px; color: #1967d2; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
         .btn-logout { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
-        .date-badge { text-align: center; background: #f1f3f4; padding: 8px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #3c4043; margin-bottom: 15px; }
+        .date-badge { text-align: center; background: #f1f3f4; padding: 8px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #3c4043; margin-bottom: 10px; }
+
+        /* KHỐI THỐNG KÊ SĨ SỐ HÔM NAY */
+        .stats-box { display: flex; justify-content: space-between; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 10px; margin-bottom: 15px; text-align: center; }
+        .stat-item { flex: 1; }
+        .stat-item .num { font-size: 16px; font-weight: bold; }
+        .stat-item .label { font-size: 11px; color: #6c757d; margin-top: 2px; }
+        .c-present { color: #28a745; }
+        .c-late { color: #fd7e14; }
+        .c-permission { color: #0d6efd; }
+        .c-absent { color: #dc3545; }
 
         .form-group { margin-bottom: 12px; position: relative; }
         label { font-weight: 600; font-size: 13px; color: #444; display: block; margin-bottom: 6px; }
@@ -23,7 +33,7 @@
         button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
         button.btn-leave { width: 100%; padding: 13px; background: #f2994a; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 6px; }
 
-        /* KHUNG CAMERA CHUẨN IOS / ANDROID */
+        /* KHUNG CAMERA QUÉT MÃ */
         #scanner-wrapper { 
             margin-bottom: 15px; border-radius: 16px; overflow: hidden; background: #000; position: relative; width: 100%; border: 4px solid #ccc; transition: all 0.2s ease-in-out;
         }
@@ -32,7 +42,7 @@
         #reader__scan_region, #reader__scan_region * { background: transparent !important; border: none !important; box-shadow: none !important; }
         #reader__dashboard { display: none !important; }
 
-        /* VÙNG NGHỈ PHÉP THIẾT KẾ RIÊNG */
+        /* VÙNG NGHỈ PHÉP */
         .leave-box { background: #fff8f0; border: 1px solid #ffe8d1; padding: 12px; border-radius: 12px; margin-top: 10px; }
         .leave-title { font-weight: bold; color: #d97706; font-size: 13px; margin-bottom: 8px; display: block; }
 
@@ -78,12 +88,32 @@
             📅 Ngày điểm danh: <span id="currentDateStr" style="color: #1a73e8;"></span>
         </div>
 
+        <!-- BẢNG HIỂN THỊ SĨ SỐ -->
+        <div class="stats-box">
+            <div class="stat-item">
+                <div class="num c-present" id="stPresent">0</div>
+                <div class="label">Có mặt</div>
+            </div>
+            <div class="stat-item">
+                <div class="num c-late" id="stLate">0</div>
+                <div class="label">Đi muộn</div>
+            </div>
+            <div class="stat-item">
+                <div class="num c-permission" id="stPermission">0</div>
+                <div class="label">P (Nghỉ)</div>
+            </div>
+            <div class="stat-item">
+                <div class="num c-absent" id="stAbsent">0</div>
+                <div class="label">Chưa rõ</div>
+            </div>
+        </div>
+
         <!-- CAMERA QUÉT MÃ QR PHÍA TRÊN -->
         <div id="scanner-wrapper">
             <div id="reader"></div>
         </div>
 
-        <!-- Ô NHẬP NGHỈ PHÉP PHÍA DƯỚI (KHÔNG PHẢI KHUNG CAMERA) -->
+        <!-- Ô NHẬP NGHỈ PHÉP PHÍA DƯỚI -->
         <div class="leave-box">
             <span class="leave-title">📝 Đánh dấu Học Sinh Nghỉ Phép (P):</span>
             <div class="form-group">
@@ -142,7 +172,22 @@
         document.getElementById("loginSection").classList.add("hidden");
         document.getElementById("attendanceSection").classList.remove("hidden");
         
+        loadStats(); // Tải sĩ số ngay khi vào màn hình
         startScanner();
+    }
+
+    // HÀM LẤY VÀ CẬP NHẬT SĨ SỐ
+    function loadStats() {
+        fetch(`${SCRIPT_URL}?action=get_stats`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                document.getElementById("stPresent").innerText = data.stats.present;
+                document.getElementById("stLate").innerText = data.stats.late;
+                document.getElementById("stPermission").innerText = data.stats.permission;
+                document.getElementById("stAbsent").innerText = data.stats.absent;
+            }
+        }).catch(() => {});
     }
 
     async function startScanner() {
@@ -241,7 +286,9 @@
             if (data.status === "success") {
                 let msg = (type === "P") 
                     ? `📝 ĐÃ GHI NGHỈ PHÉP: <strong>${data.name}</strong> (${data.maHS})`
-                    : `🎉 THÀNH CÔNG: <strong>${data.name}</strong> (${data.maHS})`;
+                    : (data.isLate 
+                        ? `⏰ ĐI MUỘN: <strong>${data.name}</strong> (${data.maHS})` 
+                        : `🎉 THÀNH CÔNG: <strong>${data.name}</strong> (${data.maHS})`);
                 
                 showResult(msg, "success");
                 if (wrapper) wrapper.classList.add("scan-success");
@@ -250,6 +297,8 @@
                     document.getElementById("studentSearch").value = "";
                     document.getElementById("selectedMaHS").value = "";
                 }
+
+                loadStats(); // Tự động cập nhật lại sĩ số sau khi ghi nhận thành công
             } else {
                 showResult(data.message, "error");
                 if (wrapper) wrapper.classList.add("scan-error");
