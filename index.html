@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Điểm Danh Học Sinh</title>
-    <!-- Thư viện Html5-QRCode -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         * { box-sizing: border-box; }
@@ -21,7 +20,7 @@
         
         button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        /* KHUNG CAMERA CHỮ NHẬT NẰM NGANG SIÊU GỌN */
+        /* Khung camera hình chữ nhật nằm ngang */
         #scanner-wrapper { 
             margin-top: 15px; 
             border-radius: 12px; 
@@ -29,7 +28,7 @@
             background: #000; 
             position: relative; 
             width: 100%;
-            height: 160px; /* Ép chiều cao cố định để luôn nằm ngang */
+            height: 160px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -55,7 +54,7 @@
 <div class="container">
     <h2>Điểm Danh Học Sinh</h2>
 
-    <!-- KHỐI ĐĂNG NHẬP (Luôn hiển thị đầu tiên) -->
+    <!-- ĐĂNG NHẬP (Luôn hiện khi bắt đầu) -->
     <div id="loginSection">
         <div class="form-group">
             <label>Email Người Điểm Danh:</label>
@@ -64,7 +63,7 @@
         <button class="btn-primary" onclick="login()">Đăng Nhập</button>
     </div>
 
-    <!-- KHỐI ĐIỂM DANH (Ẩn ban đầu) -->
+    <!-- MÀN HÌNH QUÉT -->
     <div id="attendanceSection" class="hidden">
         <div class="user-info">
             <span>👤 <strong id="userName"></strong></span>
@@ -89,7 +88,6 @@
             </select>
         </div>
 
-        <!-- Khung Camera Nằm Ngang -->
         <div id="scanner-wrapper">
             <div id="reader"></div>
         </div>
@@ -105,7 +103,6 @@
     let isProcessing = false;
     let currentUserEmail = "";
 
-    // Mở trang ra là BẮT BUỘC ĐĂNG NHẬP (Không lưu tự động)
     window.onload = function() {
         document.getElementById("loginSection").classList.remove("hidden");
         document.getElementById("attendanceSection").classList.add("hidden");
@@ -118,14 +115,9 @@
             return;
         }
 
-        const params = new URLSearchParams();
-        params.append("action", "login");
-        params.append("email", email);
-
         fetch(SCRIPT_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params.toString()
+            body: JSON.stringify({ action: "login", email: email })
         })
         .then(res => res.json())
         .then(data => {
@@ -137,7 +129,7 @@
             }
         })
         .catch(err => {
-            alert("Lỗi kết nối máy chủ! Vui lòng kiểm tra lại đường truyền.");
+            alert("Lỗi kết nối máy chủ! Vui lòng kiểm tra lại mạng.");
         });
     }
 
@@ -166,10 +158,9 @@
 
         html5QrCode = new Html5Qrcode("reader");
 
-        // Ép khung quét QR hình chữ nhật nằm ngang (280px x 120px)
         const config = { 
             fps: 15, 
-            qrbox: { width: 280, height: 120 },
+            qrbox: { width: 260, height: 120 },
             aspectRatio: 2.1
         };
 
@@ -178,7 +169,7 @@
             config, 
             onScanSuccess
         ).catch(err => {
-            showResult("❌ Không mở được camera. Vui lòng cấp quyền truy cập camera!", "error");
+            showResult("❌ Không mở được camera. Vui lòng cấp quyền truy cập!", "error");
         });
     }
 
@@ -198,16 +189,14 @@
 
         const tuan = document.getElementById("selectTuan").value;
 
-        const params = new URLSearchParams();
-        params.append("action", "attendance");
-        params.append("email", currentUserEmail);
-        params.append("tuan", tuan);
-        params.append("qrData", decodedText);
-
         fetch(SCRIPT_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params.toString()
+            body: JSON.stringify({
+                action: "attendance",
+                email: currentUserEmail,
+                tuan: tuan,
+                qrData: decodedText
+            })
         })
         .then(res => res.json())
         .then(data => {
