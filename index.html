@@ -32,14 +32,14 @@
         #reader__scan_region, #reader__scan_region * { background: transparent !important; border: none !important; box-shadow: none !important; }
         #reader__dashboard { display: none !important; }
 
+        /* VÙNG NGHỈ PHÉP THIẾT KẾ RIÊNG */
+        .leave-box { background: #fff8f0; border: 1px solid #ffe8d1; padding: 12px; border-radius: 12px; margin-top: 10px; }
+        .leave-title { font-weight: bold; color: #d97706; font-size: 13px; margin-bottom: 8px; display: block; }
+
         /* TÌM KIẾM GỢI Ý TÊN */
         .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; max-height: 160px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .suggestion-item { padding: 10px 12px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 14px; }
         .suggestion-item:hover { background: #f0f4f9; }
-
-        /* VÙNG NGHỈ PHÉP THIẾT KẾ RIÊNG */
-        .leave-box { background: #fff8f0; border: 1px solid #ffe8d1; padding: 12px; border-radius: 12px; margin-top: 10px; }
-        .leave-title { font-weight: bold; color: #d97706; font-size: 13px; margin-bottom: 8px; display: block; }
 
         /* HIỆU ỨNG THÔNG BÁO */
         #scanner-wrapper.scan-success { border-color: #28a745 !important; box-shadow: 0 0 18px rgba(40, 167, 69, 0.8) !important; }
@@ -67,7 +67,7 @@
         <button class="btn-primary" onclick="login()">Đăng Nhập</button>
     </div>
 
-    <!-- KHỐI CHÍNH (QUÉT MÃ + NGHỈ PHÉP MỞ SẴN) -->
+    <!-- KHỐI CHÍNH -->
     <div id="attendanceSection" class="hidden">
         <div class="user-info">
             <span>👤 <strong id="userName"></strong></span>
@@ -78,16 +78,16 @@
             📅 Ngày điểm danh: <span id="currentDateStr" style="color: #1a73e8;"></span>
         </div>
 
-        <!-- CAMERA QUÉT MÃ (MẶC ĐỊNH MỞ MÁY) -->
+        <!-- CAMERA QUÉT MÃ QR PHÍA TRÊN -->
         <div id="scanner-wrapper">
             <div id="reader"></div>
         </div>
 
-        <!-- KHỐI ĐÁNH DẤU NGHỈ PHÉP (NẰM TRỰC TIẾP PHÍA DƯỚI) -->
+        <!-- Ô NHẬP NGHỈ PHÉP PHÍA DƯỚI (KHÔNG PHẢI KHUNG CAMERA) -->
         <div class="leave-box">
             <span class="leave-title">📝 Đánh dấu Học Sinh Nghỉ Phép (P):</span>
             <div class="form-group">
-                <input type="text" id="studentSearch" placeholder="Gõ Tên hoặc Mã HS..." oninput="onSearchInput()">
+                <input type="text" id="studentSearch" placeholder="Gõ Tên hoặc Mã HS..." oninput="onSearchInput()" autocomplete="off">
                 <div id="suggestions" class="suggestions hidden"></div>
             </div>
             <input type="hidden" id="selectedMaHS">
