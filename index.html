@@ -22,7 +22,7 @@
         
         button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        /* KHUNG CAMERA GỌN GÀNG ĐÚNG BẰNG Ô ĐEN */
+        /* KHUNG CAMERA CHUẨN GỌN GÀNG */
         #scanner-wrapper { 
             margin-top: 10px; 
             border-radius: 16px; 
@@ -43,7 +43,7 @@
             border-radius: 12px; 
         }
 
-        /* ẨN TOÀN BỘ LỚP MỜ VÀ 4 GÓC CỦA THƯ VIỆN ĐỂ FULL VIỀN */
+        /* ẨN TOÀN BỘ LỚP MỜ VÀ 4 GÓC CỦA THƯ VIỆN */
         #reader__scan_region, 
         #reader__scan_region * { 
             background: transparent !important; 
@@ -165,19 +165,11 @@
     async function startScanner() {
         await stopScanner();
 
-        html5QrCode = new Html5Qrcode("reader", { verbose: false });
+        html5QrCode = new Html5Qrcode("reader");
 
-        // Cấu hình tối ưu camera siêu nhạy & tốc độ cao (30 fps)
+        // Cấu hình quét ổn định chuẩn 10 FPS (Đảm bảo 100% thiết bị đều nhận dạng mượt)
         const config = { 
-            fps: 30,
-            videoConstraints: {
-                facingMode: "environment",
-                width: { min: 640, ideal: 1280, max: 1920 },
-                height: { min: 480, ideal: 720, max: 1080 }
-            },
-            experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true
-            }
+            fps: 10
         };
 
         html5QrCode.start(
@@ -207,7 +199,7 @@
         if (isProcessing) return;
         isProcessing = true;
 
-        showResult("⏳ Đang ghi nhận...", "info");
+        showResult("⏳ Đang ghi nhận điểm danh...", "info");
 
         const url = `${SCRIPT_URL}?action=attendance&email=${encodeURIComponent(currentUserEmail)}&qrData=${encodeURIComponent(decodedText)}`;
 
@@ -226,15 +218,15 @@
                 wrapper.classList.add("scan-error");
             }
 
-            // Rút ngắn thời gian chờ xuống 1.2s để quét tiếp học sinh tiếp theo nhanh hơn
+            // Đợi 1.5 giây để đổi màu viền và nhận mã tiếp theo
             setTimeout(() => { 
                 wrapper.classList.remove("scan-success", "scan-error");
                 isProcessing = false; 
-            }, 1200);
+            }, 1500);
         })
         .catch(() => {
             showResult("❌ Lỗi kết nối mạng!", "error");
-            setTimeout(() => { isProcessing = false; }, 1200);
+            setTimeout(() => { isProcessing = false; }, 1500);
         });
     }
 
