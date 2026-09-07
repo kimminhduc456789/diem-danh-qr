@@ -30,9 +30,9 @@
             background: #000; 
             position: relative; 
             width: 100%;
-            height: 250px; /* Chiều cao cố định chuẩn đẹp */
-            border: 4px solid #ccc; /* Viền mặc định */
-            transition: all 0.3s ease-in-out;
+            height: 250px;
+            border: 4px solid #ccc;
+            transition: all 0.2s ease-in-out;
         }
 
         #reader { width: 100%; height: 100%; border: none !important; }
@@ -150,7 +150,6 @@
     function showAttendanceSection(name) {
         document.getElementById("userName").innerText = name;
 
-        // Hiển thị ngày hôm nay
         const today = new Date();
         const dateStr = today.getDate() + "/" + (today.getMonth() + 1) + "/" + today.getFullYear();
         document.getElementById("currentDateStr").innerText = dateStr;
@@ -166,10 +165,19 @@
     async function startScanner() {
         await stopScanner();
 
-        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode = new Html5Qrcode("reader", { verbose: false });
 
+        // Cấu hình tối ưu camera siêu nhạy & tốc độ cao (30 fps)
         const config = { 
-            fps: 15
+            fps: 30,
+            videoConstraints: {
+                facingMode: "environment",
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 }
+            },
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+            }
         };
 
         html5QrCode.start(
@@ -199,7 +207,7 @@
         if (isProcessing) return;
         isProcessing = true;
 
-        showResult("⏳ Đang ghi nhận điểm danh...", "info");
+        showResult("⏳ Đang ghi nhận...", "info");
 
         const url = `${SCRIPT_URL}?action=attendance&email=${encodeURIComponent(currentUserEmail)}&qrData=${encodeURIComponent(decodedText)}`;
 
@@ -209,28 +217,24 @@
             const wrapper = document.getElementById("scanner-wrapper");
             
             if (data.status === "success") {
-                showResult(`🎉 Điểm danh THÀNH CÔNG!<br><strong>${data.name}</strong> (${data.maHS})<br>Ngày: ${data.ngay}`, "success");
-                
-                // Đổi viền camera sang XANH LÁ
+                showResult(`🎉 THÀNH CÔNG: <strong>${data.name}</strong> (${data.maHS})`, "success");
                 wrapper.classList.remove("scan-error");
                 wrapper.classList.add("scan-success");
             } else {
                 showResult(data.message, "error");
-                
-                // Đổi viền camera sang ĐỎ
                 wrapper.classList.remove("scan-success");
                 wrapper.classList.add("scan-error");
             }
 
-            // Trả viền về màu xám bình thường sau 2.5 giây
+            // Rút ngắn thời gian chờ xuống 1.2s để quét tiếp học sinh tiếp theo nhanh hơn
             setTimeout(() => { 
                 wrapper.classList.remove("scan-success", "scan-error");
                 isProcessing = false; 
-            }, 2500);
+            }, 1200);
         })
         .catch(() => {
             showResult("❌ Lỗi kết nối mạng!", "error");
-            setTimeout(() => { isProcessing = false; }, 2500);
+            setTimeout(() => { isProcessing = false; }, 1200);
         });
     }
 
