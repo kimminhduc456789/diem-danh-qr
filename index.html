@@ -7,58 +7,44 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 420px; width: 100%; }
-        h2 { text-align: center; color: #1a73e8; margin-top: 0; margin-bottom: 20px; font-size: 20px; font-weight: 700; text-transform: uppercase; }
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; margin-bottom: 15px; font-size: 20px; font-weight: 700; text-transform: uppercase; }
         
         .user-info { background: #e8f0fe; padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 13px; color: #1967d2; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
         .btn-logout { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
         .date-badge { text-align: center; background: #f1f3f4; padding: 8px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #3c4043; margin-bottom: 15px; }
 
-        .form-group { margin-bottom: 15px; }
+        /* NÚT CHUYỂN CHẾ ĐỘ */
+        .tab-buttons { display: flex; gap: 8px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; border: 1.5px solid #1a73e8; background: #fff; color: #1a73e8; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 13px; text-align: center; }
+        .tab-btn.active { background: #1a73e8; color: #fff; }
+
+        .form-group { margin-bottom: 15px; position: relative; }
         label { font-weight: 600; font-size: 13px; color: #444; display: block; margin-bottom: 6px; }
         input { width: 100%; padding: 12px; border: 1.5px solid #dadce0; border-radius: 8px; font-size: 15px; background: #fff; outline: none; }
         
         button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        button.btn-leave { width: 100%; padding: 13px; background: #f2994a; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* KHUNG CAMERA TỐI ƯU CHUẨN IOS / SAFARI */
+        /* KHUNG CAMERA CHUẨN IOS / ANDROID */
         #scanner-wrapper { 
-            margin-top: 10px; 
-            border-radius: 16px; 
-            overflow: hidden; 
-            background: #000; 
-            position: relative; 
-            width: 100%;
-            border: 4px solid #ccc;
-            transition: all 0.2s ease-in-out;
+            margin-top: 10px; border-radius: 16px; overflow: hidden; background: #000; position: relative; width: 100%; border: 4px solid #ccc; transition: all 0.2s ease-in-out;
         }
-
         #reader { width: 100%; border: none !important; }
-        #reader video { 
-            width: 100% !important; 
-            height: auto !important; 
-            border-radius: 12px; 
-        }
-
-        /* ẨN TOÀN BỘ LỚP MỜ VÀ NÚT MẶC ĐỊNH */
-        #reader__scan_region, 
-        #reader__scan_region * { 
-            background: transparent !important; 
-            border: none !important; 
-            box-shadow: none !important;
-        }
+        #reader video { width: 100% !important; height: auto !important; border-radius: 12px; }
+        #reader__scan_region, #reader__scan_region * { background: transparent !important; border: none !important; box-shadow: none !important; }
         #reader__dashboard { display: none !important; }
 
-        /* HIỆU ỨNG VIỀN ĐỔI MÀU KHI QUÉT */
-        #scanner-wrapper.scan-success {
-            border-color: #28a745 !important;
-            box-shadow: 0 0 18px rgba(40, 167, 69, 0.8) !important;
-        }
-        #scanner-wrapper.scan-error {
-            border-color: #dc3545 !important;
-            box-shadow: 0 0 18px rgba(220, 53, 69, 0.8) !important;
-        }
+        /* TÌM KIẾM GỢI Ý TÊN */
+        .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 8px; max-height: 160px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .suggestion-item { padding: 10px 12px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 14px; }
+        .suggestion-item:hover { background: #f0f4f9; }
+
+        /* HIỆU ỨNG THÔNG BÁO */
+        #scanner-wrapper.scan-success { border-color: #28a745 !important; box-shadow: 0 0 18px rgba(40, 167, 69, 0.8) !important; }
+        #scanner-wrapper.scan-error { border-color: #dc3545 !important; box-shadow: 0 0 18px rgba(220, 53, 69, 0.8) !important; }
 
         #result { margin-top: 15px; padding: 14px; border-radius: 10px; text-align: center; font-weight: 600; font-size: 14px; display: none; line-height: 1.4; }
         .success { background-color: #e6f4ea; color: #137333; border: 1px solid #ceead6; }
@@ -73,7 +59,7 @@
 <div class="container">
     <h2>Điểm Danh Học Sinh</h2>
 
-    <!-- KHỐI ĐĂNG NHẬP -->
+    <!-- ĐĂNG NHẬP -->
     <div id="loginSection">
         <div class="form-group">
             <label>Email Người Điểm Danh:</label>
@@ -82,7 +68,7 @@
         <button class="btn-primary" onclick="login()">Đăng Nhập</button>
     </div>
 
-    <!-- KHỐI QUÉT MÃ -->
+    <!-- KHỐI CHÍNH -->
     <div id="attendanceSection" class="hidden">
         <div class="user-info">
             <span>👤 <strong id="userName"></strong></span>
@@ -93,8 +79,28 @@
             📅 Ngày điểm danh: <span id="currentDateStr" style="color: #1a73e8;"></span>
         </div>
 
-        <div id="scanner-wrapper">
-            <div id="reader"></div>
+        <!-- THANH CHUYỂN TAB -->
+        <div class="tab-buttons">
+            <div id="btnTabQR" class="tab-btn active" onclick="switchTab('qr')">📷 Quét QR (Có Mặt)</div>
+            <div id="btnTabLeave" class="tab-btn" onclick="switchTab('leave')">📝 Nghỉ Phép (P)</div>
+        </div>
+
+        <!-- TAB 1: QUÉT QR -->
+        <div id="tabQR">
+            <div id="scanner-wrapper">
+                <div id="reader"></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: ĐÁNH DẤU NGHỈ PHÉP -->
+        <div id="tabLeave" class="hidden">
+            <div class="form-group">
+                <label>Gõ Tên hoặc Mã Học Sinh:</label>
+                <input type="text" id="studentSearch" placeholder="Ví dụ: Đức hoặc TN1001..." oninput="onSearchInput()">
+                <div id="suggestions" class="suggestions hidden"></div>
+            </div>
+            <input type="hidden" id="selectedMaHS">
+            <button class="btn-leave" onclick="submitLeave()">Đánh Dấu Nghỉ Phép (P)</button>
         </div>
 
         <div id="result"></div>
@@ -107,6 +113,7 @@
     let html5QrCode = null;
     let isProcessing = false;
     let currentUserEmail = "";
+    let searchTimeout = null;
 
     window.onload = function() {
         document.getElementById("loginSection").classList.remove("hidden");
@@ -115,26 +122,17 @@
 
     function login() {
         const email = document.getElementById("userEmail").value.trim();
-        if (!email) {
-            alert("Vui lòng nhập Email!");
-            return;
-        }
+        if (!email) { alert("Vui lòng nhập Email!"); return; }
 
-        const url = `${SCRIPT_URL}?action=login&email=${encodeURIComponent(email)}`;
-
-        fetch(url)
+        fetch(`${SCRIPT_URL}?action=login&email=${encodeURIComponent(email)}`)
         .then(res => res.json())
         .then(data => {
             if (data.status === "success") {
                 currentUserEmail = email;
                 showAttendanceSection(data.name);
-            } else {
-                alert(data.message);
-            }
+            } else { alert(data.message); }
         })
-        .catch(err => {
-            alert("Không thể kết nối máy chủ! Vui lòng thử lại.");
-        });
+        .catch(() => alert("Không thể kết nối máy chủ!"));
     }
 
     async function logout() {
@@ -147,69 +145,119 @@
 
     function showAttendanceSection(name) {
         document.getElementById("userName").innerText = name;
-
         const today = new Date();
-        const dateStr = today.getDate() + "/" + (today.getMonth() + 1) + "/" + today.getFullYear();
-        document.getElementById("currentDateStr").innerText = dateStr;
+        document.getElementById("currentDateStr").innerText = today.getDate() + "/" + (today.getMonth() + 1) + "/" + today.getFullYear();
 
         document.getElementById("loginSection").classList.add("hidden");
         document.getElementById("attendanceSection").classList.remove("hidden");
         
-        setTimeout(() => {
+        switchTab('qr');
+    }
+
+    function switchTab(tab) {
+        hideResult();
+        if (tab === 'qr') {
+            document.getElementById("tabQR").classList.remove("hidden");
+            document.getElementById("tabLeave").classList.add("hidden");
+            document.getElementById("btnTabQR").classList.add("active");
+            document.getElementById("btnTabLeave").classList.remove("active");
             startScanner();
-        }, 300);
+        } else {
+            stopScanner();
+            document.getElementById("tabQR").classList.add("hidden");
+            document.getElementById("tabLeave").classList.remove("hidden");
+            document.getElementById("btnTabLeave").classList.add("active");
+            document.getElementById("btnTabQR").classList.remove("active");
+        }
     }
 
     async function startScanner() {
         await stopScanner();
-
         html5QrCode = new Html5Qrcode("reader");
-
-        // Cấu hình tương thích tối đa cho Safari (iPhone) & Chrome (Android)
         const config = { 
             fps: 15,
-            qrbox: function(viewfinderWidth, viewfinderHeight) {
-                // Tự động tính toán vùng quét chuẩn theo màn hình thiết bị
-                let minEdgePercentage = 0.75; 
-                let minDimension = Math.min(viewfinderWidth, viewfinderHeight);
-                return {
-                    width: Math.floor(minDimension * minEdgePercentage),
-                    height: Math.floor(minDimension * minEdgePercentage)
-                };
+            qrbox: (w, h) => {
+                let min = Math.min(w, h);
+                return { width: Math.floor(min * 0.75), height: Math.floor(min * 0.75) };
             },
             aspectRatio: 1.0
         };
 
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            config, 
-            onScanSuccess
-        ).catch(err => {
-            showResult("❌ Không mở được camera. Vui lòng kiểm tra quyền truy cập trên Safari!", "error");
-        });
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+        .catch(() => showResult("❌ Không mở được camera. Vui lòng cấp quyền!", "error"));
     }
 
     async function stopScanner() {
         if (html5QrCode) {
             try {
-                if (html5QrCode.isScanning) {
-                    await html5QrCode.stop();
-                }
+                if (html5QrCode.isScanning) await html5QrCode.stop();
                 html5QrCode.clear();
-            } catch (e) {
-                console.log("Lỗi dừng camera:", e);
-            }
+            } catch (e) {}
             html5QrCode = null;
         }
     }
 
     function onScanSuccess(decodedText) {
         if (isProcessing) return;
+        let maHS = decodedText.includes("?ma=") ? decodedText.split("?ma=")[1].split("&")[0] : decodedText;
+        sendAttendance(maHS, "PRESENT");
+    }
+
+    function onSearchInput() {
+        clearTimeout(searchTimeout);
+        const query = document.getElementById("studentSearch").value.trim();
+        const suggestionsDiv = document.getElementById("suggestions");
+        
+        if (query.length < 1) {
+            suggestionsDiv.classList.add("hidden");
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`${SCRIPT_URL}?action=search_student&q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success" && data.students.length > 0) {
+                    suggestionsDiv.innerHTML = data.students.map(s => 
+                        `<div class="suggestion-item" onclick="selectStudent('${s.maHS}', '${s.name}')">
+                            <strong>${s.name}</strong> (${s.maHS})
+                         </div>`
+                    ).join('');
+                    suggestionsDiv.classList.remove("hidden");
+                } else {
+                    suggestionsDiv.classList.add("hidden");
+                }
+            });
+        }, 300);
+    }
+
+    function selectStudent(maHS, name) {
+        document.getElementById("studentSearch").value = `${name} (${maHS})`;
+        document.getElementById("selectedMaHS").value = maHS;
+        document.getElementById("suggestions").classList.add("hidden");
+    }
+
+    function submitLeave() {
+        let maHS = document.getElementById("selectedMaHS").value;
+        let query = document.getElementById("studentSearch").value.trim();
+
+        if (!maHS && query) maHS = query; // Nếu người dùng gõ thẳng Mã HS
+
+        if (!maHS) {
+            alert("Vui lòng chọn hoặc nhập Tên/Mã học sinh!");
+            return;
+        }
+
+        sendAttendance(maHS, "P");
+    }
+
+    function sendAttendance(maHS, type) {
+        if (isProcessing) return;
         isProcessing = true;
 
-        showResult("⏳ Đang ghi nhận điểm danh...", "info");
+        showResult("⏳ Đang ghi nhận...", "info");
 
-        const url = `${SCRIPT_URL}?action=attendance&email=${encodeURIComponent(currentUserEmail)}&qrData=${encodeURIComponent(decodedText)}`;
+        const url = `${SCRIPT_URL}?action=attendance&email=${encodeURIComponent(currentUserEmail)}&maHS=${encodeURIComponent(maHS)}&type=${type}`;
 
         fetch(url)
         .then(res => res.json())
@@ -217,17 +265,25 @@
             const wrapper = document.getElementById("scanner-wrapper");
             
             if (data.status === "success") {
-                showResult(`🎉 THÀNH CÔNG: <strong>${data.name}</strong> (${data.maHS})`, "success");
-                wrapper.classList.remove("scan-error");
-                wrapper.classList.add("scan-success");
+                let msg = (type === "P") 
+                    ? `📝 ĐÃ GHI NGHỈ PHÉP: <strong>${data.name}</strong> (${data.maHS})`
+                    : `🎉 THÀNH CÔNG: <strong>${data.name}</strong> (${data.maHS})`;
+                
+                showResult(msg, "success");
+                if (wrapper) wrapper.classList.add("scan-success");
+
+                // Reset ô tìm kiếm nếu là nghỉ phép
+                if (type === "P") {
+                    document.getElementById("studentSearch").value = "";
+                    document.getElementById("selectedMaHS").value = "";
+                }
             } else {
                 showResult(data.message, "error");
-                wrapper.classList.remove("scan-success");
-                wrapper.classList.add("scan-error");
+                if (wrapper) wrapper.classList.add("scan-error");
             }
 
             setTimeout(() => { 
-                wrapper.classList.remove("scan-success", "scan-error");
+                if (wrapper) wrapper.classList.remove("scan-success", "scan-error");
                 isProcessing = false; 
             }, 1500);
         })
@@ -242,6 +298,10 @@
         resDiv.innerHTML = msg;
         resDiv.className = type;
         resDiv.style.display = "block";
+    }
+
+    function hideResult() {
+        document.getElementById("result").style.display = "none";
     }
 </script>
 
