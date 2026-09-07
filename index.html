@@ -11,24 +11,26 @@
         .container { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 420px; width: 100%; }
         h2 { text-align: center; color: #1a73e8; margin-top: 0; margin-bottom: 20px; font-size: 20px; font-weight: 700; text-transform: uppercase; }
         
-        .user-info { background: #e8f0fe; padding: 10px 14px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; color: #1967d2; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
+        .user-info { background: #e8f0fe; padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 13px; color: #1967d2; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
         .btn-logout { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+
+        .date-badge { text-align: center; background: #f1f3f4; padding: 8px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #3c4043; margin-bottom: 15px; }
 
         .form-group { margin-bottom: 15px; }
         label { font-weight: 600; font-size: 13px; color: #444; display: block; margin-bottom: 6px; }
-        input, select { width: 100%; padding: 12px; border: 1.5px solid #dadce0; border-radius: 8px; font-size: 15px; background: #fff; outline: none; }
+        input { width: 100%; padding: 12px; border: 1.5px solid #dadce0; border-radius: 8px; font-size: 15px; background: #fff; outline: none; }
         
         button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        /* KHUNG CAMERA NẰM NGANG RỘNG RÃI - DỄ NHẬN MÃ XA */
+        /* KHUNG CAMERA THU NHỎ VIỀN VỪA VẶN */
         #scanner-wrapper { 
-            margin-top: 15px; 
+            margin-top: 10px; 
             border-radius: 12px; 
             overflow: hidden; 
             background: #000; 
             position: relative; 
             width: 100%;
-            min-height: 220px;
+            min-height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -70,22 +72,8 @@
             <button class="btn-logout" onclick="logout()">Thoát</button>
         </div>
 
-        <div class="form-group">
-            <label>Ngày Điểm Danh:</label>
-            <select id="selectTuan">
-                <optgroup label="Tháng 9">
-                    <option value="6/9">6/9</option>
-                    <option value="13/9">13/9</option>
-                    <option value="20/9">20/9</option>
-                    <option value="27/9">27/9</option>
-                </optgroup>
-                <optgroup label="Tháng 10">
-                    <option value="4/10">4/10</option>
-                    <option value="11/10">11/10</option>
-                    <option value="18/10">18/10</option>
-                    <option value="25/10">25/10</option>
-                </optgroup>
-            </select>
+        <div class="date-badge">
+            📅 Ngày điểm danh: <span id="currentDateStr" style="color: #1a73e8;"></span>
         </div>
 
         <div id="scanner-wrapper">
@@ -142,6 +130,12 @@
 
     function showAttendanceSection(name) {
         document.getElementById("userName").innerText = name;
+
+        // Hiển thị ngày hôm nay trên giao diện
+        const today = new Date();
+        const dateStr = today.getDate() + "/" + (today.getMonth() + 1) + "/" + today.getFullYear();
+        document.getElementById("currentDateStr").innerText = dateStr;
+
         document.getElementById("loginSection").classList.add("hidden");
         document.getElementById("attendanceSection").classList.remove("hidden");
         
@@ -155,12 +149,12 @@
 
         html5QrCode = new Html5Qrcode("reader");
 
-        // Cấu hình khung quét tỉ lệ chữ nhật ngang rộng (1.6:1), giúp quét cực nhanh và xa
+        // Thu gọn viền quét nhỏ gọn hơn (chiếm 70% chiều rộng khung)
         const config = { 
             fps: 15, 
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-                const w = Math.floor(viewfinderWidth * 0.85);
-                const h = Math.floor(w * 0.55);
+                const w = Math.floor(viewfinderWidth * 0.70);
+                const h = Math.floor(w * 0.60);
                 return { width: w, height: h };
             },
             aspectRatio: 1.6
@@ -195,14 +189,13 @@
 
         showResult("⏳ Đang ghi nhận điểm danh...", "info");
 
-        const tuan = document.getElementById("selectTuan").value;
-        const url = `${SCRIPT_URL}?action=attendance&email=${encodeURIComponent(currentUserEmail)}&tuan=${encodeURIComponent(tuan)}&qrData=${encodeURIComponent(decodedText)}`;
+        const url = `${SCRIPT_URL}?action=attendance&email=${encodeURIComponent(currentUserEmail)}&qrData=${encodeURIComponent(decodedText)}`;
 
         fetch(url)
         .then(res => res.json())
         .then(data => {
             if (data.status === "success") {
-                showResult(`🎉 Điểm danh THÀNH CÔNG!<br><strong>${data.name}</strong> (${data.maHS})`, "success");
+                showResult(`🎉 Điểm danh THÀNH CÔNG!<br><strong>${data.name}</strong> (${data.maHS})<br>Ngày: ${data.ngay}`, "success");
             } else {
                 showResult(data.message, "error");
             }
