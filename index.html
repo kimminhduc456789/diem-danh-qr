@@ -20,7 +20,7 @@
         
         button.btn-primary { width: 100%; padding: 13px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-        /* Khung camera hình chữ nhật nằm ngang */
+        /* KHUNG CAMERA NẰM NGANG RỘNG RÃI - DỄ NHẬN MÃ XA */
         #scanner-wrapper { 
             margin-top: 15px; 
             border-radius: 12px; 
@@ -28,15 +28,15 @@
             background: #000; 
             position: relative; 
             width: 100%;
-            height: 160px;
+            min-height: 220px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        #reader { width: 100%; height: 100%; border: none !important; }
+        #reader { width: 100%; border: none !important; }
         #reader video { 
             width: 100% !important; 
-            height: 160px !important; 
+            height: auto !important; 
             object-fit: cover !important; 
             border-radius: 12px; 
         }
@@ -54,7 +54,7 @@
 <div class="container">
     <h2>Điểm Danh Học Sinh</h2>
 
-    <!-- KHỐI ĐĂNG NHẬP (Luôn hiển thị đầu tiên) -->
+    <!-- KHỐI ĐĂNG NHẬP -->
     <div id="loginSection">
         <div class="form-group">
             <label>Email Người Điểm Danh:</label>
@@ -132,8 +132,8 @@
         });
     }
 
-    function logout() {
-        stopScanner();
+    async function logout() {
+        await stopScanner();
         currentUserEmail = "";
         document.getElementById("loginSection").classList.remove("hidden");
         document.getElementById("attendanceSection").classList.add("hidden");
@@ -150,17 +150,20 @@
         }, 300);
     }
 
-    function startScanner() {
-        if (html5QrCode) {
-            stopScanner();
-        }
+    async function startScanner() {
+        await stopScanner();
 
         html5QrCode = new Html5Qrcode("reader");
 
+        // Cấu hình khung quét tỉ lệ chữ nhật ngang rộng (1.6:1), giúp quét cực nhanh và xa
         const config = { 
             fps: 15, 
-            qrbox: { width: 260, height: 120 },
-            aspectRatio: 2.1
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                const w = Math.floor(viewfinderWidth * 0.85);
+                const h = Math.floor(w * 0.55);
+                return { width: w, height: h };
+            },
+            aspectRatio: 1.6
         };
 
         html5QrCode.start(
@@ -172,11 +175,17 @@
         });
     }
 
-    function stopScanner() {
+    async function stopScanner() {
         if (html5QrCode) {
-            html5QrCode.stop().then(() => {
+            try {
+                if (html5QrCode.isScanning) {
+                    await html5QrCode.stop();
+                }
                 html5QrCode.clear();
-            }).catch(err => console.log(err));
+            } catch (e) {
+                console.log("Lỗi dừng camera:", e);
+            }
+            html5QrCode = null;
         }
     }
 
