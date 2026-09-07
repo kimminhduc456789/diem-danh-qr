@@ -47,14 +47,15 @@
     <div id="error" class="error-box hidden"></div>
 
     <div id="content" class="hidden">
-        <!-- 1. THÔNG TIN HỌC SINH -->
+        <!-- 1. THÔNG TIN HỌC SINH (SẮP XẾP CHUẨN THỨ TỰ A -> G) -->
         <div class="card">
             <div class="card-title">👤 THÔNG TIN HỌC SINH</div>
             <div class="info-item"><span class="info-label">Mã học sinh:</span><span class="info-value" id="stMaHS">---</span></div>
             <div class="info-item"><span class="info-label">Họ và tên:</span><span class="info-value" id="stName">---</span></div>
             <div class="info-item"><span class="info-label">Ngày sinh:</span><span class="info-value" id="stDob">---</span></div>
+            <div class="info-item"><span class="info-label">Nơi ở:</span><span class="info-value" id="stAddress">---</span></div>
+            <div class="info-item"><span class="info-label">Tên thánh, bố hoặc mẹ:</span><span class="info-value" id="stParent">---</span></div>
             <div class="info-item"><span class="info-label">Lớp:</span><span class="info-value" id="stClass">---</span></div>
-            <div class="info-item"><span class="info-label">Phụ huynh:</span><span class="info-value" id="stParent">---</span></div>
             <div class="info-item"><span class="info-label">Số điện thoại:</span><span class="info-value" id="stPhone">---</span></div>
         </div>
 
@@ -90,12 +91,13 @@
             document.getElementById("loading").classList.add("hidden");
 
             if (data.status === "success") {
-                // Hiển thị đầy đủ Thông tin học sinh
+                // Hiển thị đầy đủ Thông tin học sinh theo thứ tự Cột A -> Cột G
                 document.getElementById("stMaHS").innerText = data.student.maHS || "---";
                 document.getElementById("stName").innerText = data.student.name || "---";
                 document.getElementById("stDob").innerText = data.student.dob || "---";
-                document.getElementById("stClass").innerText = data.student.className || "---";
+                document.getElementById("stAddress").innerText = data.student.address || "---";
                 document.getElementById("stParent").innerText = data.student.parentName || "---";
+                document.getElementById("stClass").innerText = data.student.className || "---";
                 document.getElementById("stPhone").innerText = data.student.phone || "---";
 
                 // Hiển thị Điểm số
