@@ -47,7 +47,7 @@
     <div id="error" class="error-box hidden"></div>
 
     <div id="content" class="hidden">
-        <!-- 1. THÔNG TIN HỌC SINH (SẮP XẾP CHUẨN THỨ TỰ A -> G) -->
+        <!-- 1. THÔNG TIN HỌC SINH -->
         <div class="card">
             <div class="card-title">👤 THÔNG TIN HỌC SINH</div>
             <div class="info-item"><span class="info-label">Mã học sinh:</span><span class="info-value" id="stMaHS">---</span></div>
@@ -91,7 +91,7 @@
             document.getElementById("loading").classList.add("hidden");
 
             if (data.status === "success") {
-                // Hiển thị đầy đủ Thông tin học sinh theo thứ tự Cột A -> Cột G
+                // Đổ thông tin học sinh
                 document.getElementById("stMaHS").innerText = data.student.maHS || "---";
                 document.getElementById("stName").innerText = data.student.name || "---";
                 document.getElementById("stDob").innerText = data.student.dob || "---";
@@ -100,7 +100,7 @@
                 document.getElementById("stClass").innerText = data.student.className || "---";
                 document.getElementById("stPhone").innerText = data.student.phone || "---";
 
-                // Hiển thị Điểm số
+                // Đổ Điểm số
                 const gradesDiv = document.getElementById("gradesList");
                 gradesDiv.innerHTML = "";
                 if (data.grades && data.grades.length > 0) {
@@ -116,7 +116,7 @@
                     gradesDiv.innerHTML = "<div style='text-align:center; color:#777; padding:8px;'>Chưa có dữ liệu điểm số.</div>";
                 }
 
-                // Hiển thị Chuyên cần
+                // Đổ Điểm danh chuyên cần
                 const listDiv = document.getElementById("attendanceList");
                 listDiv.innerHTML = "";
                 if (data.attendance && data.attendance.length > 0) {
