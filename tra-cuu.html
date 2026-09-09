@@ -5,79 +5,148 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sổ Liên Lạc Điện Tử</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #eef2f5; margin: 0; padding: 15px; }
-    .card { background: white; max-width: 650px; margin: 0 auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    h2 { color: #1a73e8; text-align: center; margin-top: 0; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 12px; }
+    .card { background: #ffffff; max-width: 500px; margin: 0 auto; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .header-title { text-align: center; color: #1a73e8; margin-top: 0; margin-bottom: 4px; font-size: 20px; text-transform: uppercase; }
+    .sub-title { text-align: center; color: #5f6368; margin-bottom: 16px; font-size: 13px; }
+    
     .search-box { display: flex; gap: 8px; margin-bottom: 20px; }
-    input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
-    button { background: #1a73e8; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    input[type="text"] { flex: 1; padding: 10px 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; outline: none; }
+    input[type="text"]:focus { border-color: #1a73e8; }
+    button { background: #1a73e8; color: #ffffff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; }
     button:hover { background: #1557b0; }
-    
-    .info-table, .gv-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .info-table td, .gv-table th, .gv-table td { padding: 8px 10px; border-bottom: 1px solid #e0e0e0; font-size: 14px; }
-    .gv-table th { background: #f1f3f4; text-align: left; color: #3c4043; }
-    
-    /* Chân trang Giáo Lý Viên */
-    .footer-gv { margin-top: 30px; background: #f8f9fa; border: 1px solid #dcdfe6; border-radius: 8px; padding: 15px; }
-    .footer-gv h3 { margin: 0 0 10px 0; color: #202124; font-size: 16px; border-bottom: 2px solid #1a73e8; display: inline-block; padding-bottom: 4px; }
-    .phone-link { color: #1a73e8; text-decoration: none; font-weight: bold; }
-    .badge-role { background: #e8f0fe; color: #174ea6; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+
+    .section-box { background: #ffffff; border: 1px solid #e8eaed; border-radius: 10px; padding: 14px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .section-title { font-size: 15px; font-weight: 700; color: #1a73e8; margin-top: 0; margin-bottom: 10px; border-bottom: 2px solid #e8f0fe; padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+
+    .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #f1f3f4; font-size: 13px; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #5f6368; font-weight: 500; }
+    .info-val { color: #202124; font-weight: 600; text-align: right; }
+
+    .custom-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
+    .custom-table th { background: #f8f9fa; color: #3c4043; text-align: left; padding: 8px; border-bottom: 2px solid #dadce0; font-weight: 600; }
+    .custom-table td { padding: 8px; border-bottom: 1px solid #f1f3f4; color: #202124; }
+
+    .badge-present { background: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-absent { background: #fce8e6; color: #c5221f; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-late { background: #fef7e0; color: #b06000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-role { background: #e8f0fe; color: #174ea6; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+    .phone-link { color: #1a73e8; text-decoration: none; font-weight: 600; }
+    #loading { display: none; text-align: center; padding: 20px; color: #5f6368; font-size: 14px; }
   </style>
 </head>
 <body>
 
 <div class="card">
-  <h2>SỔ LIÊN LẠC ĐIỆN TỬ</h2>
-  
+  <h2 class="header-title">Sổ Liên Lạc Điện Tử</h2>
+  <div class="sub-title">Tra cứu thông tin & kết quả học tập</div>
+
   <div class="search-box">
-    <input type="text" id="maHS" placeholder="Nhập mã học sinh (VD: TN3B01)...">
+    <input type="text" id="maHS" placeholder="Nhập mã học sinh (VD: TN3B001)...">
     <button onclick="traCuu()">Tra cứu</button>
   </div>
 
-  <div id="resultContent" style="display: none;">
-    <!-- Thông tin học sinh -->
-    <h3>📌 Thông tin Học Sinh</h3>
-    <table class="info-table">
-      <tr><td><b>Mã HS:</b> <span id="stMa"></span></td><td><b>Họ tên:</b> <span id="stTen"></span></td></tr>
-      <tr><td><b>Ngày sinh:</b> <span id="stNS"></span></td><td><b>Lớp:</b> <span id="stLop"></span></td></tr>
-      <tr><td><b>Phụ huynh:</b> <span id="stPH"></span></td><td><b>SĐT PH:</b> <span id="stSdt"></span></td></tr>
-    </table>
+  <div id="loading">⏳ Đang tải dữ liệu, vui lòng chờ...</div>
 
-    <!-- CHÂN TRANG: THÔNG TIN GIÁO LÝ VIÊN -->
-    <div class="footer-gv">
-      <h3>Thông tin giáo viên</h3>
+  <div id="resultContent" style="display: none;">
+    
+    <!-- 1. THÔNG TIN HỌC SINH -->
+    <div class="section-box">
+      <div class="section-title">👤 THÔNG TIN HỌC SINH</div>
+      <div class="info-row"><span class="info-label">Mã học sinh:</span><span class="info-val" id="stMa"></span></div>
+      <div class="info-row"><span class="info-label">Họ và tên:</span><span class="info-val" id="stTen"></span></div>
+      <div class="info-row"><span class="info-label">Ngày sinh:</span><span class="info-val" id="stNS"></span></div>
+      <div class="info-row"><span class="info-label">Nơi ở:</span><span class="info-val" id="stDC"></span></div>
+      <div class="info-row"><span class="info-label">Phụ huynh:</span><span class="info-val" id="stPH"></span></div>
+      <div class="info-row"><span class="info-label">Lớp:</span><span class="info-val" id="stLop"></span></div>
+      <div class="info-row"><span class="info-label">Số điện thoại:</span><span class="info-val" id="stSdt"></span></div>
+    </div>
+
+    <!-- 2. KẾT QUẢ HỌC TẬP -->
+    <div class="section-box">
+      <div class="section-title">📊 KẾT QUẢ HỌC TẬP</div>
+      <div id="gradeContainer"></div>
+    </div>
+
+    <!-- 3. ĐIỂM DANH CHUYÊN CẦN -->
+    <div class="section-box">
+      <div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>
+      <div id="attendanceContainer"></div>
+    </div>
+
+    <!-- 4. THÔNG TIN GIÁO LÝ VIÊN Ở CHÂN TRANG -->
+    <div class="section-box">
+      <div class="section-title">👨‍🏫 THÔNG TIN GIÁO VIÊN</div>
       <div id="gvListContainer"></div>
     </div>
+
   </div>
 </div>
 
 <script>
-  // THAY LINK WEB APP CỦA BẠN VÀO ĐÂY:
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
+  // ĐƯỜNG LINK WEB APP GOOGLE APPS SCRIPT CỦA BẠN:
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqAInyL7i4M7p-2CInh3a7xYI95W3t4S_R1pQe4N3r/exec"; 
 
   function traCuu() {
     var ma = document.getElementById("maHS").value.trim();
-    if(!ma) return alert("Vui lòng nhập mã học sinh!");
+    if(!ma) {
+      alert("Vui lòng nhập mã học sinh!");
+      return;
+    }
 
-    fetch(`${WEB_APP_URL}?ma=${encodeURIComponent(ma)}`)
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("resultContent").style.display = "none";
+
+    fetch(`${WEB_APP_URL}?action=search&ma=${encodeURIComponent(ma)}`)
       .then(res => res.json())
       .then(data => {
-        if(data.status === "success") {
-          document.getElementById("resultContent").style.display = "block";
-          
-          // Điền thông tin học sinh
-          document.getElementById("stMa").innerText = data.student.maHS;
-          document.getElementById("stTen").innerText = data.student.name;
-          document.getElementById("stNS").innerText = data.student.dob;
-          document.getElementById("stLop").innerText = data.student.className;
-          document.getElementById("stPH").innerText = data.student.parentName;
-          document.getElementById("stSdt").innerText = data.student.phone;
+        document.getElementById("loading").style.display = "none";
 
-          // Render danh sách Giáo lý viên ở Chân trang
-          var htmlGV = '';
+        if(data.status === "success" && data.student) {
+          document.getElementById("resultContent").style.display = "block";
+
+          // 1. Render Thông tin học sinh
+          document.getElementById("stMa").innerText = data.student.maHS || "";
+          document.getElementById("stTen").innerText = data.student.name || "";
+          document.getElementById("stNS").innerText = data.student.dob || "";
+          document.getElementById("stDC").innerText = data.student.address || "";
+          document.getElementById("stPH").innerText = data.student.parentName || "";
+          document.getElementById("stLop").innerText = data.student.className || "";
+          document.getElementById("stSdt").innerText = data.student.phone || "";
+
+          // 2. Render Bảng điểm
+          var htmlGrade = "";
+          if(data.grades && data.grades.length > 0) {
+            data.grades.forEach(g => {
+              htmlGrade += `<div class="info-row"><span class="info-label">${g.subject}:</span><span class="info-val" style="color:#c5221f;">${g.score}</span></div>`;
+            });
+          } else {
+            htmlGrade = '<div style="color:#70757a; font-size:13px;">Chưa có dữ liệu bảng điểm.</div>';
+          }
+          document.getElementById("gradeContainer").innerHTML = htmlGrade;
+
+          // 3. Render Điểm danh
+          var htmlAtt = "";
+          if(data.attendance && data.attendance.length > 0) {
+            data.attendance.forEach(a => {
+              var badgeClass = "badge-present";
+              if(a.status === "Vắng") badgeClass = "badge-absent";
+              if(a.status === "Đi muộn") badgeClass = "badge-late";
+              htmlAtt += `<div class="info-row"><span class="info-label">Ngày ${a.date}:</span><span class="${badgeClass}">${a.status}</span></div>`;
+            });
+          } else {
+            htmlAtt = '<div style="color:#70757a; font-size:13px;">Chưa có dữ liệu điểm danh.</div>';
+          }
+          document.getElementById("attendanceContainer").innerHTML = htmlAtt;
+
+          // 4. Render Bảng Giáo lý viên ở Chân trang
+          var htmlGV = "";
           if(data.teachers && data.teachers.length > 0) {
-            htmlGV += '<table class="gv-table">';
-            htmlGV += '<thead><tr><th>STT</th><th>Họ tên giáo viên</th><th>Số điện thoại</th><th>Chức vụ</th></tr></thead><tbody>';
+            htmlGV += '<table class="custom-table">';
+            htmlGV += '<thead><tr><th>STT</th><th>Họ tên</th><th>SĐT</th><th>Chức vụ</th></tr></thead><tbody>';
             
             data.teachers.forEach(function(gv) {
               htmlGV += `<tr>
@@ -89,16 +158,28 @@
             });
             htmlGV += '</tbody></table>';
           } else {
-            htmlGV = '<p style="color:#70757a; margin: 5px 0;">Chưa cập nhật thông tin Giáo lý viên cho lớp này.</p>';
+            htmlGV = '<div style="color:#70757a; font-size:13px;">Chưa có thông tin giáo viên cho lớp này.</div>';
           }
-          
           document.getElementById("gvListContainer").innerHTML = htmlGV;
 
         } else {
-          alert(data.message);
+          alert(data.message || "Không tìm thấy thông tin học sinh!");
         }
       })
-      .catch(err => alert("Lỗi tra cứu: " + err));
+      .catch(err => {
+        document.getElementById("loading").style.display = "none";
+        alert("Lỗi kết nối máy chủ: " + err);
+      });
+  }
+
+  // Tự động tra cứu nếu có tham số mã trên URL (Ví dụ: index.html?ma=TN3B001)
+  window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const maParam = urlParams.get('ma') || urlParams.get('maHS');
+    if(maParam) {
+      document.getElementById("maHS").value = maParam;
+      traCuu();
+    }
   }
 </script>
 
