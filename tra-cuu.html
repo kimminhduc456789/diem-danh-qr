@@ -39,10 +39,10 @@
   <h2 class="header-title">Sổ Liên Lạc Điện Tử</h2>
   <div class="sub-title">Thông tin & Kết quả học tập</div>
 
-  <!-- Thông báo trạng thái khi quét QR -->
-  <div id="statusMessage">⏳ Đang tải dữ liệu học sinh...</div>
+  <!-- Trạng thái tải dữ liệu -->
+  <div id="statusMessage">⏳ Đang lấy dữ liệu học sinh, vui lòng chờ...</div>
 
-  <!-- Toàn bộ nội dung tự động hiện sau khi quét -->
+  <!-- Hiển thị toàn bộ thông tin sau khi quét -->
   <div id="resultContent" style="display: none;">
     
     <!-- 1. THÔNG TIN HỌC SINH -->
@@ -69,9 +69,9 @@
       <div id="attendanceContainer"></div>
     </div>
 
-    <!-- 4. THÔNG TIN GIÁO LÝ VIÊN Ở CHÂN TRANG -->
+    <!-- 4. BAN GIẢNG HUẤN / GIÁO LÝ VIÊN PHỤ TRÁCH -->
     <div class="section-box">
-      <div class="section-title">👨‍🏫 THÔNG TIN GIÁO VIÊN</div>
+      <div class="section-title">👨‍🏫 THÔNG TIN GIÁO VIÊN PHỤ TRÁCH</div>
       <div id="gvListContainer"></div>
     </div>
 
@@ -79,92 +79,93 @@
 </div>
 
 <script>
-  // LƯU Ý: THAY ĐÚNG LINK WEB APP GOOGLE APPS SCRIPT CỦA BẠN VÀO GIỮA 2 DẤU NGOẶC KÉP:
-  const WEB_APP_URL = "DÁN_LINK_WEB_APP_CỦA_BẠN_VÀO_ĐÂY"; 
+  // ĐƯỜNG LINK WEB APP TỪ GOOGLE APPS SCRIPT CỦA BẠN
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqAInyL7i4M7p-2CInh3a7xYI95W3t4S_R1pQe4N3r/exec"; 
 
-  // TỰ ĐỘNG CHẠY NGAY KHI PHỤ HUYNH MỞ TRANG
   window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     const maParam = urlParams.get('ma') || urlParams.get('maHS') || urlParams.get('id');
 
     if (!maParam) {
       document.getElementById("statusMessage").className = "error-msg";
-      document.getElementById("statusMessage").innerHTML = "⚠️ Mã QR không hợp lệ hoặc thiếu Mã học sinh!";
+      document.getElementById("statusMessage").innerHTML = "⚠️ Mã QR không hợp lệ hoặc thiếu thông tin mã học sinh!";
       return;
     }
 
-    // Gọi API lấy dữ liệu tự động
-    fetch(`${WEB_APP_URL}?ma=${encodeURIComponent(maParam)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success" && data.student) {
-          // Ẩn dòng chữ đang tải, hiện toàn bộ giao diện
-          document.getElementById("statusMessage").style.display = "none";
-          document.getElementById("resultContent").style.display = "block";
+    // Tự động tải dữ liệu không bị lỗi CORS
+    fetch(`${WEB_APP_URL}?ma=${encodeURIComponent(maParam)}`, {
+      method: 'GET',
+      redirect: 'follow'
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "success" && data.student) {
+        document.getElementById("statusMessage").style.display = "none";
+        document.getElementById("resultContent").style.display = "block";
 
-          // 1. Hiển thị Thông tin học sinh
-          document.getElementById("stMa").innerText = data.student.maHS || "";
-          document.getElementById("stTen").innerText = data.student.name || "";
-          document.getElementById("stNS").innerText = data.student.dob || "";
-          document.getElementById("stDC").innerText = data.student.address || "";
-          document.getElementById("stPH").innerText = data.student.parentName || "";
-          document.getElementById("stLop").innerText = data.student.className || "";
-          document.getElementById("stSdt").innerText = data.student.phone || "";
+        // Render Thông tin
+        document.getElementById("stMa").innerText = data.student.maHS || "";
+        document.getElementById("stTen").innerText = data.student.name || "";
+        document.getElementById("stNS").innerText = data.student.dob || "";
+        document.getElementById("stDC").innerText = data.student.address || "";
+        document.getElementById("stPH").innerText = data.student.parentName || "";
+        document.getElementById("stLop").innerText = data.student.className || "";
+        document.getElementById("stSdt").innerText = data.student.phone || "";
 
-          // 2. Hiển thị Bảng điểm
-          var htmlGrade = "";
-          if (data.grades && data.grades.length > 0) {
-            data.grades.forEach(g => {
-              htmlGrade += `<div class="info-row"><span class="info-label">${g.subject}:</span><span class="info-val" style="color:#c5221f;">${g.score}</span></div>`;
-            });
-          } else {
-            htmlGrade = '<div style="color:#70757a; font-size:13px;">Chưa có dữ liệu điểm số.</div>';
-          }
-          document.getElementById("gradeContainer").innerHTML = htmlGrade;
-
-          // 3. Hiển thị Điểm danh
-          var htmlAtt = "";
-          if (data.attendance && data.attendance.length > 0) {
-            data.attendance.forEach(a => {
-              var badgeClass = "badge-present";
-              if (a.status === "Vắng") badgeClass = "badge-absent";
-              if (a.status === "Đi muộn") badgeClass = "badge-late";
-              htmlAtt += `<div class="info-row"><span class="info-label">Ngày ${a.date}:</span><span class="${badgeClass}">${a.status}</span></div>`;
-            });
-          } else {
-            htmlAtt = '<div style="color:#70757a; font-size:13px;">Chưa có dữ liệu điểm danh.</div>';
-          }
-          document.getElementById("attendanceContainer").innerHTML = htmlAtt;
-
-          // 4. Hiển thị Giáo lý viên ở chân trang
-          var htmlGV = "";
-          if (data.teachers && data.teachers.length > 0) {
-            htmlGV += '<table class="custom-table">';
-            htmlGV += '<thead><tr><th>STT</th><th>Họ tên giáo viên</th><th>SĐT</th><th>Chức vụ</th></tr></thead><tbody>';
-            
-            data.teachers.forEach(function(gv) {
-              htmlGV += `<tr>
-                <td>${gv.stt}</td>
-                <td><b>${gv.name}</b></td>
-                <td><a href="tel:${gv.phone}" class="phone-link">${gv.phone}</a></td>
-                <td><span class="badge-role">${gv.role}</span></td>
-              </tr>`;
-            });
-            htmlGV += '</tbody></table>';
-          } else {
-            htmlGV = '<div style="color:#70757a; font-size:13px;">Chưa cập nhật giáo viên cho lớp này.</div>';
-          }
-          document.getElementById("gvListContainer").innerHTML = htmlGV;
-
+        // Render Bảng điểm
+        var htmlGrade = "";
+        if (data.grades && data.grades.length > 0) {
+          data.grades.forEach(g => {
+            htmlGrade += `<div class="info-row"><span class="info-label">${g.subject}:</span><span class="info-val" style="color:#c5221f;">${g.score}</span></div>`;
+          });
         } else {
-          document.getElementById("statusMessage").className = "error-msg";
-          document.getElementById("statusMessage").innerText = "⚠️ " + (data.message || "Không tìm thấy thông tin học sinh!");
+          htmlGrade = '<div style="color:#70757a; font-size:13px;">Chưa có dữ liệu bảng điểm.</div>';
         }
-      })
-      .catch(err => {
+        document.getElementById("gradeContainer").innerHTML = htmlGrade;
+
+        // Render Điểm danh
+        var htmlAtt = "";
+        if (data.attendance && data.attendance.length > 0) {
+          data.attendance.forEach(a => {
+            var badgeClass = "badge-present";
+            if (a.status === "Vắng") badgeClass = "badge-absent";
+            if (a.status === "Đi muộn") badgeClass = "badge-late";
+            htmlAtt += `<div class="info-row"><span class="info-label">Ngày ${a.date}:</span><span class="${badgeClass}">${a.status}</span></div>`;
+          });
+        } else {
+          htmlAtt = '<div style="color:#70757a; font-size:13px;">Chưa có dữ liệu điểm danh.</div>';
+        }
+        document.getElementById("attendanceContainer").innerHTML = htmlAtt;
+
+        // Render Giáo lý viên
+        var htmlGV = "";
+        if (data.teachers && data.teachers.length > 0) {
+          htmlGV += '<table class="custom-table">';
+          htmlGV += '<thead><tr><th>STT</th><th>Họ tên</th><th>SĐT</th><th>Chức vụ</th></tr></thead><tbody>';
+          
+          data.teachers.forEach(function(gv) {
+            htmlGV += `<tr>
+              <td>${gv.stt}</td>
+              <td><b>${gv.name}</b></td>
+              <td><a href="tel:${gv.phone}" class="phone-link">${gv.phone}</a></td>
+              <td><span class="badge-role">${gv.role}</span></td>
+            </tr>`;
+          });
+          htmlGV += '</tbody></table>';
+        } else {
+          htmlGV = '<div style="color:#70757a; font-size:13px;">Chưa cập nhật thông tin giáo viên cho lớp này.</div>';
+        }
+        document.getElementById("gvListContainer").innerHTML = htmlGV;
+
+      } else {
         document.getElementById("statusMessage").className = "error-msg";
-        document.getElementById("statusMessage").innerText = "⚠️ Lỗi kết nối hệ thống. Vui lòng thử lại sau!";
-      });
+        document.getElementById("statusMessage").innerText = "⚠️ " + (data.message || "Không tìm thấy dữ liệu học sinh!");
+      }
+    })
+    .catch(err => {
+      document.getElementById("statusMessage").className = "error-msg";
+      document.getElementById("statusMessage").innerText = "⚠️ Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng!";
+    });
   };
 </script>
 
