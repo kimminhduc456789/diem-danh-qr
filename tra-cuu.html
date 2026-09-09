@@ -50,19 +50,16 @@
             gap: 6px; 
         }
         
-        /* Thông tin học sinh */
         .info-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
         .info-label { color: #5f6368; }
         .info-value { font-weight: 600; color: #202124; text-align: right; }
 
-        /* Cuộn lướt riêng cho Điểm số và Chuyên cần */
         .scrollable-list { 
             max-height: 110px; 
             overflow-y: auto; 
             padding-right: 4px;
         }
 
-        /* Tùy chỉnh thanh cuộn nhỏ gọn */
         .scrollable-list::-webkit-scrollbar { width: 4px; }
         .scrollable-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
@@ -82,7 +79,6 @@
         .badge-absent { background-color: #fce8e6; color: #c5221f; }
         .score-val { font-weight: bold; color: #d93025; font-size: 13px; }
 
-        /* Chân trang thông tin Giáo viên */
         .footer-teacher { 
             background-color: #f8f9fa; 
             border-top: 1px solid #eee; 
@@ -91,11 +87,11 @@
             margin-top: 2px;
             font-size: 11px;
         }
-        .footer-title { font-weight: bold; color: #3c4043; margin-bottom: 4px; text-align: center; }
-        .teacher-grid { display: flex; justify-content: space-between; gap: 5px; }
-        .teacher-box { text-align: center; flex: 1; background: #fff; padding: 4px; border-radius: 6px; border: 1px solid #e8eaed; }
-        .teacher-role { color: #70757a; font-size: 10px; }
-        .teacher-name { font-weight: 600; color: #1a73e8; margin-top: 1px; }
+        .footer-title { font-weight: bold; color: #3c4043; margin-bottom: 6px; text-align: center; }
+        .teacher-grid { display: flex; justify-content: space-between; gap: 6px; }
+        .teacher-box { text-align: center; flex: 1; background: #fff; padding: 5px; border-radius: 6px; border: 1px solid #e8eaed; }
+        .teacher-role { color: #70757a; font-size: 10px; font-weight: 500; }
+        .teacher-name { font-weight: 600; color: #1a73e8; margin-top: 2px; }
 
         .error-box { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; padding: 12px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 13px; }
         .loading { text-align: center; padding: 20px 0; color: #1a73e8; font-weight: 600; font-size: 13px; }
@@ -126,13 +122,13 @@
             <div class="info-item"><span class="info-label">Số điện thoại:</span><span class="info-value" id="stPhone">---</span></div>
         </div>
 
-        <!-- 2. KẾT QUẢ HỌC TẬP (CÓ THANH CUỘN LƯỚT) -->
+        <!-- 2. KẾT QUẢ HỌC TẬP -->
         <div class="card">
             <div class="card-title">📊 KẾT QUẢ HỌC TẬP</div>
             <div class="scrollable-list" id="gradesList"></div>
         </div>
 
-        <!-- 3. ĐIỂM DANH CHUYÊN CẦN (CÓ THANH CUỘN LƯỚT) -->
+        <!-- 3. ĐIỂM DANH CHUYÊN CẦN -->
         <div class="card">
             <div class="card-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>
             <div class="scrollable-list" id="attendanceList"></div>
@@ -143,11 +139,11 @@
             <div class="footer-title">BAN GIẢNG HUẤN / GIÁO VIÊN PHỤ TRÁCH</div>
             <div class="teacher-grid">
                 <div class="teacher-box">
-                    <div class="teacher-role">GV Chủ Nhiệm</div>
+                    <div class="teacher-role">GLV Chủ Nhiệm</div>
                     <div class="teacher-name" id="tcCN">---</div>
                 </div>
                 <div class="teacher-box">
-                    <div class="teacher-role">GV Phó</div>
+                    <div class="teacher-role">Trợ Giảng</div>
                     <div class="teacher-name" id="tcPho">---</div>
                 </div>
             </div>
@@ -173,7 +169,6 @@
             document.getElementById("loading").classList.add("hidden");
 
             if (data.status === "success") {
-                // Đổ thông tin học sinh
                 document.getElementById("stMaHS").innerText = data.student.maHS || "---";
                 document.getElementById("stName").innerText = data.student.name || "---";
                 document.getElementById("stDob").innerText = data.student.dob || "---";
@@ -182,7 +177,6 @@
                 document.getElementById("stClass").innerText = data.student.className || "---";
                 document.getElementById("stPhone").innerText = data.student.phone || "---";
 
-                // Đổ thông tin Giáo viên
                 document.getElementById("tcCN").innerText = data.student.teacherCN || "Chưa cập nhật";
                 document.getElementById("tcPho").innerText = data.student.teacherPho || "Chưa cập nhật";
 
@@ -202,7 +196,7 @@
                     gradesDiv.innerHTML = "<div style='text-align:center; color:#777; padding:8px;'>Chưa có dữ liệu điểm số.</div>";
                 }
 
-                // Đổ Điểm danh chuyên cần
+                // Đổ Chuyên cần
                 const listDiv = document.getElementById("attendanceList");
                 listDiv.innerHTML = "";
                 if (data.attendance && data.attendance.length > 0) {
