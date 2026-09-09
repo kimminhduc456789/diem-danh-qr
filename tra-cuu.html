@@ -2,47 +2,101 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sổ Liên Lạc Điện Tử</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 12px; }
-    .card { background: #ffffff; max-width: 500px; margin: 0 auto; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .header-title { text-align: center; color: #1a73e8; margin-top: 0; margin-bottom: 4px; font-size: 20px; text-transform: uppercase; }
-    .sub-title { text-align: center; color: #5f6368; margin-bottom: 16px; font-size: 13px; }
+    
+    /* Cấu hình trang vừa khít 1 màn hình */
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Dừng cuộn toàn trang */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f6f9;
+    }
 
-    .section-box { background: #ffffff; border: 1px solid #e8eaed; border-radius: 10px; padding: 14px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-    .section-title { font-size: 15px; font-weight: 700; color: #1a73e8; margin-top: 0; margin-bottom: 10px; border-bottom: 2px solid #e8f0fe; padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .card {
+      background: #ffffff;
+      max-width: 500px;
+      height: 100vh;
+      margin: 0 auto;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+    }
 
-    /* KHU VỰC TẠO THANH CUỘN ĐỘC LẬP */
-    .scrollable-container {
-      max-height: 250px;
+    .header-title { text-align: center; color: #1a73e8; margin: 0; font-size: 17px; text-transform: uppercase; font-weight: 700; }
+    .sub-title { text-align: center; color: #5f6368; margin-bottom: 8px; font-size: 11px; }
+
+    /* Nội dung chính linh hoạt theo chiều cao màn hình */
+    #resultContent {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    .section-box {
+      background: #ffffff;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    /* Các phần cuộn chiếm tỉ lệ đều nhau */
+    .section-box.scrollable-box {
+      flex: 1;
+      min-height: 0; /* Bắt buộc để flexbox thu nhỏ vừa màn hình */
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a73e8;
+      margin: 0 0 4px 0;
+      border-bottom: 1.5px solid #e8f0fe;
+      padding-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* THANH CUỘN NỘI BỘ MƯỢT MÀ */
+    .scroll-content {
+      flex: 1;
       overflow-y: auto;
       padding-right: 4px;
-      -webkit-overflow-scrolling: touch; /* Cho phép cuộn mượt trên iOS */
+      -webkit-overflow-scrolling: touch;
     }
 
     /* Tùy chỉnh thanh cuộn nhỏ gọn */
-    .scrollable-container::-webkit-scrollbar { width: 5px; }
-    .scrollable-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-    .scrollable-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+    .scroll-content::-webkit-scrollbar { width: 4px; }
+    .scroll-content::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    .scroll-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
-    .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #f1f3f4; font-size: 13px; }
+    .info-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #f1f3f4; font-size: 12px; }
     .info-row:last-child { border-bottom: none; }
     .info-label { color: #5f6368; font-weight: 500; }
     .info-val { color: #202124; font-weight: 600; text-align: right; }
 
-    .custom-table { width: 100%; border-collapse: collapse; margin-top: 2px; font-size: 13px; }
-    .custom-table th { background: #f8f9fa; color: #3c4043; text-align: left; padding: 8px; border-bottom: 2px solid #dadce0; font-weight: 600; position: sticky; top: 0; z-index: 1; }
-    .custom-table td { padding: 8px; border-bottom: 1px solid #f1f3f4; color: #202124; }
+    .custom-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .custom-table th { background: #f8f9fa; color: #3c4043; text-align: left; padding: 6px; border-bottom: 2px solid #dadce0; font-weight: 600; position: sticky; top: 0; z-index: 1; }
+    .custom-table td { padding: 5px 6px; border-bottom: 1px solid #f1f3f4; color: #202124; }
 
-    .badge-present { background: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-    .badge-absent { background: #fce8e6; color: #c5221f; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-    .badge-late { background: #fef7e0; color: #b06000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-    .badge-role { background: #e8f0fe; color: #174ea6; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .badge-present { background: #e6f4ea; color: #137333; padding: 1px 6px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-absent { background: #fce8e6; color: #c5221f; padding: 1px 6px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-late { background: #fef7e0; color: #b06000; padding: 1px 6px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-role { background: #e8f0fe; color: #174ea6; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
 
     .phone-link { color: #1a73e8; text-decoration: none; font-weight: 600; }
-    #statusMessage { text-align: center; padding: 30px 10px; color: #1a73e8; font-size: 15px; font-weight: bold; }
+    #statusMessage { text-align: center; padding: 30px 10px; color: #1a73e8; font-size: 14px; font-weight: bold; }
     .error-msg { color: #d93025 !important; }
   </style>
 </head>
@@ -55,34 +109,31 @@
   <div id="statusMessage">⏳ Đang lấy dữ liệu học sinh, vui lòng chờ...</div>
 
   <div id="resultContent" style="display: none;">
-    <!-- 1. THÔNG TIN HỌC SINH -->
+    <!-- 1. THÔNG TIN HỌC SINH (CỐ ĐỊNH NHỎ GỌN) -->
     <div class="section-box">
       <div class="section-title">👤 THÔNG TIN HỌC SINH</div>
-      <div class="info-row"><span class="info-label">Mã học sinh:</span><span class="info-val" id="stMa"></span></div>
-      <div class="info-row"><span class="info-label">Họ và tên:</span><span class="info-val" id="stTen"></span></div>
-      <div class="info-row"><span class="info-label">Ngày sinh:</span><span class="info-val" id="stNS"></span></div>
-      <div class="info-row"><span class="info-label">Nơi ở:</span><span class="info-val" id="stDC"></span></div>
-      <div class="info-row"><span class="info-label">Phụ huynh:</span><span class="info-val" id="stPH"></span></div>
-      <div class="info-row"><span class="info-label">Lớp:</span><span class="info-val" id="stLop"></span></div>
+      <div class="info-row"><span class="info-label">Mã HS / Họ tên:</span><span class="info-val"><b id="stMa"></b> - <b id="stTen" style="color:#1a73e8;"></b></span></div>
+      <div class="info-row"><span class="info-label">Ngày sinh / Nơi ở:</span><span class="info-val"><span id="stNS"></span> (<span id="stDC"></span>)</span></div>
+      <div class="info-row"><span class="info-label">Lớp / Phụ huynh:</span><span class="info-val"><span id="stLop"></span> - <span id="stPH"></span></span></div>
       <div class="info-row"><span class="info-label">Số điện thoại:</span><span class="info-val" id="stSdt"></span></div>
     </div>
 
-    <!-- 2. KẾT QUẢ HỌC TẬP (CÓ CUỘN) -->
-    <div class="section-box">
+    <!-- 2. KẾT QUẢ HỌC TẬP (CUỘN ĐỘC LẬP) -->
+    <div class="section-box scrollable-box">
       <div class="section-title">📊 KẾT QUẢ HỌC TẬP</div>
-      <div id="gradeContainer" class="scrollable-container"></div>
+      <div id="gradeContainer" class="scroll-content"></div>
     </div>
 
-    <!-- 3. ĐIỂM DANH CHUYÊN CẦN (CÓ CUỘN) -->
-    <div class="section-box">
+    <!-- 3. ĐIỂM DANH CHUYÊN CẦN (CUỘN ĐỘC LẬP) -->
+    <div class="section-box scrollable-box">
       <div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>
-      <div id="attendanceContainer" class="scrollable-container"></div>
+      <div id="attendanceContainer" class="scroll-content"></div>
     </div>
 
-    <!-- 4. GIÁO LÝ VIÊN PHỤ TRÁCH (CÓ CUỘN) -->
-    <div class="section-box">
+    <!-- 4. GIÁO LÝ VIÊN PHỤ TRÁCH (CUỘN ĐỘC LẬP) -->
+    <div class="section-box scrollable-box">
       <div class="section-title">👨‍🏫 THÔNG TIN GIÁO VIÊN PHỤ TRÁCH</div>
-      <div id="gvListContainer" class="scrollable-container"></div>
+      <div id="gvListContainer" class="scroll-content"></div>
     </div>
   </div>
 </div>
@@ -93,7 +144,7 @@
   function handleResponse(data) {
     if (data && data.status === "success" && data.student) {
       document.getElementById("statusMessage").style.display = "none";
-      document.getElementById("resultContent").style.display = "block";
+      document.getElementById("resultContent").style.display = "flex";
 
       document.getElementById("stMa").innerText = data.student.maHS || "";
       document.getElementById("stTen").innerText = data.student.name || "";
@@ -109,7 +160,7 @@
           htmlGrade += `<div class="info-row"><span class="info-label">${g.subject}:</span><span class="info-val" style="color:#c5221f;">${g.score}</span></div>`;
         });
       } else {
-        htmlGrade = '<div style="color:#70757a; font-size:13px;">Chưa có dữ liệu bảng điểm.</div>';
+        htmlGrade = '<div style="color:#70757a; font-size:11px; padding:4px 0;">Chưa có dữ liệu bảng điểm.</div>';
       }
       document.getElementById("gradeContainer").innerHTML = htmlGrade;
 
@@ -122,7 +173,7 @@
           htmlAtt += `<div class="info-row"><span class="info-label">Ngày ${a.date}:</span><span class="${badgeClass}">${a.status}</span></div>`;
         });
       } else {
-        htmlAtt = '<div style="color:#70757a; font-size:13px;">Chưa có dữ liệu điểm danh.</div>';
+        htmlAtt = '<div style="color:#70757a; font-size:11px; padding:4px 0;">Chưa có dữ liệu điểm danh.</div>';
       }
       document.getElementById("attendanceContainer").innerHTML = htmlAtt;
 
@@ -140,7 +191,7 @@
         });
         htmlGV += '</tbody></table>';
       } else {
-        htmlGV = '<div style="color:#70757a; font-size:13px;">Chưa cập nhật giáo viên cho lớp này.</div>';
+        htmlGV = '<div style="color:#70757a; font-size:11px; padding:4px 0;">Chưa cập nhật giáo viên cho lớp này.</div>';
       }
       document.getElementById("gvListContainer").innerHTML = htmlGV;
 
@@ -168,7 +219,7 @@
     script.src = `${WEB_APP_URL}?ma=${encodeURIComponent(maParam)}&callback=handleResponse&_=${new Date().getTime()}`;
     script.onerror = function() {
       document.getElementById("statusMessage").className = "error-msg";
-      document.getElementById("statusMessage").innerHTML = `⚠️ Không thể kết nối máy chủ.<br><button onclick="loadData()" style="margin-top:12px;padding:8px 16px;border-radius:6px;border:none;background:#1a73e8;color:#fff;font-weight:bold;cursor:pointer;">Thử lại</button>`;
+      document.getElementById("statusMessage").innerHTML = `⚠️ Không thể kết nối máy chủ.<br><button onclick="loadData()" style="margin-top:8px;padding:6px 12px;border-radius:6px;border:none;background:#1a73e8;color:#fff;font-weight:bold;cursor:pointer;">Thử lại</button>`;
     };
     document.body.appendChild(script);
   }
