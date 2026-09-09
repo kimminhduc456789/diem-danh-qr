@@ -2,18 +2,18 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sổ Liên Lạc Điện Tử</title>
   <style>
     * { box-sizing: border-box; }
     
-    /* Cấu hình trang vừa khít 1 màn hình */
+    /* Cho phép toàn bộ trang cuộn tự nhiên */
     html, body {
-      height: 100vh;
-      width: 100vw;
+      min-height: 100vh;
+      width: 100%;
       margin: 0;
       padding: 0;
-      overflow: hidden; /* Cố định không cho cuộn cả trang */
+      overflow-y: auto; /* Bật lại thanh cuộn trang */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f4f6f9;
     }
@@ -21,56 +21,45 @@
     .card {
       background: #ffffff;
       max-width: 500px;
-      height: 100vh;
       margin: 0 auto;
-      padding: 10px 12px;
+      padding: 14px;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
     .header-title { text-align: center; color: #1a73e8; margin: 0; font-size: 18px; text-transform: uppercase; font-weight: 700; }
-    .sub-title { text-align: center; color: #5f6368; margin-bottom: 6px; font-size: 12px; }
+    .sub-title { text-align: center; color: #5f6368; margin-bottom: 12px; font-size: 12px; }
 
-    /* Nội dung chính linh hoạt */
     #resultContent {
       display: flex;
       flex-direction: column;
-      flex: 1;
-      gap: 6px;
-      overflow: hidden;
+      gap: 10px;
     }
 
     .section-box {
       background: #ffffff;
       border: 1px solid #e8eaed;
-      border-radius: 8px;
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-
-    /* Khung cuộn tự co giãn vừa màn hình */
-    .section-box.scrollable-box {
-      flex: 1;
-      min-height: 0; /* Bắt buộc để flexbox thu nhỏ chuẩn */
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
     .section-title {
       font-size: 13px;
       font-weight: 700;
       color: #1a73e8;
-      margin: 0 0 4px 0;
+      margin: 0 0 6px 0;
       border-bottom: 1.5px solid #e8f0fe;
-      padding-bottom: 3px;
+      padding-bottom: 4px;
       display: flex;
       align-items: center;
       gap: 4px;
     }
 
-    /* THANH CUỘN NỘI BỘ MƯỢT MÀ */
+    /* Khung cuộn nội bộ giới hạn chiều cao hợp lý */
     .scroll-content {
-      flex: 1;
+      max-height: 180px; /* Giới hạn tối đa, dài hơn sẽ xuất hiện thanh cuộn */
       overflow-y: auto;
       padding-right: 4px;
       -webkit-overflow-scrolling: touch;
@@ -80,24 +69,20 @@
     .scroll-content::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
     .scroll-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
-    /* KIỂU DÒNG CỦA THÔNG TIN HỌC SINH (RÕ RÀNG, RỘNG RÃI) */
-    .info-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #f1f3f4; font-size: 13px; }
+    /* Dòng thông tin rõ ràng cho phụ huynh */
+    .info-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #f1f3f4; font-size: 13px; }
     .info-row:last-child { border-bottom: none; }
     .info-label { color: #5f6368; font-weight: 500; }
     .info-val { color: #202124; font-weight: 600; text-align: right; }
 
-    /* THIẾT LẬP RIÊNG CHO BẢNG ĐIỂM DANH (BÉ VÀ GỌN LẠI) */
-    .attendance-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px dashed #f1f3f4; font-size: 11px; }
-    .attendance-row:last-child { border-bottom: none; }
-
     .custom-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .custom-table th { background: #f8f9fa; color: #3c4043; text-align: left; padding: 5px; border-bottom: 2px solid #dadce0; font-weight: 600; position: sticky; top: 0; z-index: 1; }
-    .custom-table td { padding: 4px 5px; border-bottom: 1px solid #f1f3f4; color: #202124; }
+    .custom-table th { background: #f8f9fa; color: #3c4043; text-align: left; padding: 6px; border-bottom: 2px solid #dadce0; font-weight: 600; position: sticky; top: 0; z-index: 1; }
+    .custom-table td { padding: 5px 6px; border-bottom: 1px solid #f1f3f4; color: #202124; }
 
-    .badge-present { background: #e6f4ea; color: #137333; padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; }
-    .badge-absent { background: #fce8e6; color: #c5221f; padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; }
-    .badge-late { background: #fef7e0; color: #b06000; padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; }
-    .badge-role { background: #e8f0fe; color: #174ea6; padding: 1px 5px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+    .badge-present { background: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-absent { background: #fce8e6; color: #c5221f; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-late { background: #fef7e0; color: #b06000; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-role { background: #e8f0fe; color: #174ea6; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
 
     .phone-link { color: #1a73e8; text-decoration: none; font-weight: 600; }
     #statusMessage { text-align: center; padding: 30px 10px; color: #1a73e8; font-size: 14px; font-weight: bold; }
@@ -113,7 +98,7 @@
   <div id="statusMessage">⏳ Đang lấy dữ liệu học sinh, vui lòng chờ...</div>
 
   <div id="resultContent" style="display: none;">
-    <!-- 1. THÔNG TIN HỌC SINH (MỖI THỨ 1 DÒNG RÕ RÀNG) -->
+    <!-- 1. THÔNG TIN HỌC SINH -->
     <div class="section-box">
       <div class="section-title">👤 THÔNG TIN HỌC SINH</div>
       <div class="info-row"><span class="info-label">Mã học sinh:</span><span class="info-val" id="stMa"></span></div>
@@ -125,20 +110,20 @@
       <div class="info-row"><span class="info-label">Số điện thoại:</span><span class="info-val" id="stSdt"></span></div>
     </div>
 
-    <!-- 2. KẾT QUẢ HỌC TẬP (CUỘN ĐỘC LẬP) -->
-    <div class="section-box scrollable-box">
+    <!-- 2. KẾT QUẢ HỌC TẬP -->
+    <div class="section-box">
       <div class="section-title">📊 KẾT QUẢ HỌC TẬP</div>
       <div id="gradeContainer" class="scroll-content"></div>
     </div>
 
-    <!-- 3. ĐIỂM DANH CHUYÊN CẦN (BÉ GỌN & CUỘN ĐỘC LẬP) -->
-    <div class="section-box scrollable-box">
+    <!-- 3. ĐIỂM DANH CHUYÊN CẦN -->
+    <div class="section-box">
       <div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>
       <div id="attendanceContainer" class="scroll-content"></div>
     </div>
 
-    <!-- 4. GIÁO LÝ VIÊN PHỤ TRÁCH (CUỘN ĐỘC LẬP) -->
-    <div class="section-box scrollable-box">
+    <!-- 4. GIÁO LÝ VIÊN PHỤ TRÁCH -->
+    <div class="section-box">
       <div class="section-title">👨‍🏫 THÔNG TIN GIÁO VIÊN PHỤ TRÁCH</div>
       <div id="gvListContainer" class="scroll-content"></div>
     </div>
@@ -167,7 +152,7 @@
           htmlGrade += `<div class="info-row"><span class="info-label">${g.subject}:</span><span class="info-val" style="color:#c5221f;">${g.score}</span></div>`;
         });
       } else {
-        htmlGrade = '<div style="color:#70757a; font-size:11px; padding:4px 0;">Chưa có dữ liệu bảng điểm.</div>';
+        htmlGrade = '<div style="color:#70757a; font-size:12px; padding:4px 0;">Chưa có dữ liệu bảng điểm.</div>';
       }
       document.getElementById("gradeContainer").innerHTML = htmlGrade;
 
@@ -177,10 +162,10 @@
           var badgeClass = "badge-present";
           if (a.status === "Vắng") badgeClass = "badge-absent";
           if (a.status === "Đi muộn") badgeClass = "badge-late";
-          htmlAtt += `<div class="attendance-row"><span class="info-label">Ngày ${a.date}:</span><span class="${badgeClass}">${a.status}</span></div>`;
+          htmlAtt += `<div class="info-row"><span class="info-label">Ngày ${a.date}:</span><span class="${badgeClass}">${a.status}</span></div>`;
         });
       } else {
-        htmlAtt = '<div style="color:#70757a; font-size:11px; padding:4px 0;">Chưa có dữ liệu điểm danh.</div>';
+        htmlAtt = '<div style="color:#70757a; font-size:12px; padding:4px 0;">Chưa có dữ liệu điểm danh.</div>';
       }
       document.getElementById("attendanceContainer").innerHTML = htmlAtt;
 
@@ -198,7 +183,7 @@
         });
         htmlGV += '</tbody></table>';
       } else {
-        htmlGV = '<div style="color:#70757a; font-size:11px; padding:4px 0;">Chưa cập nhật giáo viên cho lớp này.</div>';
+        htmlGV = '<div style="color:#70757a; font-size:12px; padding:4px 0;">Chưa cập nhật giáo viên cho lớp này.</div>';
       }
       document.getElementById("gvListContainer").innerHTML = htmlGV;
 
