@@ -78,7 +78,7 @@
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqAInyL7i4M7p-2CInh3a7xYI95W3t4S_R1pQe4N3r/exec"; 
 
   function handleResponse(data) {
-    if (data.status === "success" && data.student) {
+    if (data && data.status === "success" && data.student) {
       document.getElementById("statusMessage").style.display = "none";
       document.getElementById("resultContent").style.display = "block";
 
@@ -133,28 +133,34 @@
 
     } else {
       document.getElementById("statusMessage").className = "error-msg";
-      document.getElementById("statusMessage").innerText = "⚠️ " + (data.message || "Không tìm thấy dữ liệu!");
+      document.getElementById("statusMessage").innerText = "⚠️ " + (data ? data.message : "Không tìm thấy dữ liệu!");
     }
   }
 
-  window.onload = function() {
+  function loadData() {
     const urlParams = new URLSearchParams(window.location.search);
     const maParam = urlParams.get('ma') || urlParams.get('maHS') || urlParams.get('id');
 
     if (!maParam) {
       document.getElementById("statusMessage").className = "error-msg";
-      document.getElementById("statusMessage").innerHTML = "⚠️ Mã QR không hợp lệ!";
+      document.getElementById("statusMessage").innerHTML = "⚠️ Mã QR không chứa tham số mã học sinh!";
       return;
     }
 
+    const oldScript = document.getElementById("jsonpScript");
+    if (oldScript) oldScript.remove();
+
     const script = document.createElement('script');
-    script.src = `${WEB_APP_URL}?ma=${encodeURIComponent(maParam)}&callback=handleResponse`;
+    script.id = "jsonpScript";
+    script.src = `${WEB_APP_URL}?ma=${encodeURIComponent(maParam)}&callback=handleResponse&_=${new Date().getTime()}`;
     script.onerror = function() {
       document.getElementById("statusMessage").className = "error-msg";
-      document.getElementById("statusMessage").innerText = "⚠️ Không thể kết nối máy chủ!";
+      document.getElementById("statusMessage").innerHTML = `⚠️ Không thể kết nối máy chủ.<br><button onclick="loadData()" style="margin-top:12px;padding:8px 16px;border-radius:6px;border:none;background:#1a73e8;color:#fff;font-weight:bold;cursor:pointer;">Thử lại</button>`;
     };
     document.body.appendChild(script);
-  };
+  }
+
+  window.onload = loadData;
 </script>
 
 </body>
