@@ -2,36 +2,103 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sổ Liên Lạc Điện Tử</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .container { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); max-width: 420px; width: 100%; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #f4f6f9; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+            padding: 10px;
+        }
         
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h2 { color: #1a73e8; margin: 0; font-size: 20px; font-weight: 700; text-transform: uppercase; }
-        .header p { color: #5f6368; font-size: 12px; margin-top: 4px; }
+        .container { 
+            background: #ffffff; 
+            border-radius: 16px; 
+            padding: 15px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08); 
+            max-width: 420px; 
+            width: 100%; 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header { text-align: center; margin-bottom: 12px; }
+        .header h2 { color: #1a73e8; margin: 0; font-size: 18px; font-weight: 700; text-transform: uppercase; }
+        .header p { color: #5f6368; font-size: 11px; margin-top: 2px; }
 
-        .card { background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .card-title { font-weight: bold; color: #1a73e8; font-size: 14px; border-bottom: 2px solid #e8f0fe; padding-bottom: 6px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .card { 
+            background: #ffffff; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 10px; 
+            padding: 10px 12px; 
+            margin-bottom: 10px; 
+        }
+        .card-title { 
+            font-weight: bold; 
+            color: #1a73e8; 
+            font-size: 13px; 
+            border-bottom: 2px solid #e8f0fe; 
+            padding-bottom: 4px; 
+            margin-bottom: 8px; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
         
-        .info-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        /* Thông tin học sinh */
+        .info-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
         .info-label { color: #5f6368; }
         .info-value { font-weight: 600; color: #202124; text-align: right; }
 
-        .grade-item, .attendance-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 13px; }
-        .attendance-list { max-height: 250px; overflow-y: auto; }
+        /* Cuộn lướt riêng cho Điểm số và Chuyên cần */
+        .scrollable-list { 
+            max-height: 110px; 
+            overflow-y: auto; 
+            padding-right: 4px;
+        }
+
+        /* Tùy chỉnh thanh cuộn nhỏ gọn */
+        .scrollable-list::-webkit-scrollbar { width: 4px; }
+        .scrollable-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+        .grade-item, .attendance-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 5px 0; 
+            border-bottom: 1px dashed #eee; 
+            font-size: 12px; 
+        }
         
-        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .badge { padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
         .badge-present { background-color: #e6f4ea; color: #137333; }
         .badge-late { background-color: #fff3cd; color: #856404; }
         .badge-permission { background-color: #cce5ff; color: #004085; }
         .badge-absent { background-color: #fce8e6; color: #c5221f; }
-        .score-val { font-weight: bold; color: #d93025; font-size: 14px; }
+        .score-val { font-weight: bold; color: #d93025; font-size: 13px; }
 
-        .error-box { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; padding: 15px; border-radius: 10px; text-align: center; font-weight: 600; font-size: 14px; }
-        .loading { text-align: center; padding: 30px 0; color: #1a73e8; font-weight: 600; font-size: 14px; }
+        /* Chân trang thông tin Giáo viên */
+        .footer-teacher { 
+            background-color: #f8f9fa; 
+            border-top: 1px solid #eee; 
+            border-radius: 8px; 
+            padding: 8px 10px; 
+            margin-top: 2px;
+            font-size: 11px;
+        }
+        .footer-title { font-weight: bold; color: #3c4043; margin-bottom: 4px; text-align: center; }
+        .teacher-grid { display: flex; justify-content: space-between; gap: 5px; }
+        .teacher-box { text-align: center; flex: 1; background: #fff; padding: 4px; border-radius: 6px; border: 1px solid #e8eaed; }
+        .teacher-role { color: #70757a; font-size: 10px; }
+        .teacher-name { font-weight: 600; color: #1a73e8; margin-top: 1px; }
+
+        .error-box { background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; padding: 12px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 13px; }
+        .loading { text-align: center; padding: 20px 0; color: #1a73e8; font-weight: 600; font-size: 13px; }
         .hidden { display: none; }
     </style>
 </head>
@@ -43,7 +110,7 @@
         <p>Tra cứu thông tin & kết quả học tập</p>
     </div>
 
-    <div id="loading" class="loading">⏳ Đang tải dữ liệu học sinh...</div>
+    <div id="loading" class="loading">⏳ Đang tải dữ liệu...</div>
     <div id="error" class="error-box hidden"></div>
 
     <div id="content" class="hidden">
@@ -59,16 +126,31 @@
             <div class="info-item"><span class="info-label">Số điện thoại:</span><span class="info-value" id="stPhone">---</span></div>
         </div>
 
-        <!-- 2. KẾT QUẢ HỌC TẬP -->
+        <!-- 2. KẾT QUẢ HỌC TẬP (CÓ THANH CUỘN LƯỚT) -->
         <div class="card">
             <div class="card-title">📊 KẾT QUẢ HỌC TẬP</div>
-            <div id="gradesList"></div>
+            <div class="scrollable-list" id="gradesList"></div>
         </div>
 
-        <!-- 3. ĐIỂM DANH CHUYÊN CẦN -->
+        <!-- 3. ĐIỂM DANH CHUYÊN CẦN (CÓ THANH CUỘN LƯỚT) -->
         <div class="card">
             <div class="card-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>
-            <div class="attendance-list" id="attendanceList"></div>
+            <div class="scrollable-list" id="attendanceList"></div>
+        </div>
+
+        <!-- 4. CHÂN TRANG THÔNG TIN GIÁO VIÊN -->
+        <div class="footer-teacher">
+            <div class="footer-title">BAN GIẢNG HUẤN / GIÁO VIÊN PHỤ TRÁCH</div>
+            <div class="teacher-grid">
+                <div class="teacher-box">
+                    <div class="teacher-role">GV Chủ Nhiệm</div>
+                    <div class="teacher-name" id="tcCN">---</div>
+                </div>
+                <div class="teacher-box">
+                    <div class="teacher-role">GV Phó</div>
+                    <div class="teacher-name" id="tcPho">---</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -99,6 +181,10 @@
                 document.getElementById("stParent").innerText = data.student.parentName || "---";
                 document.getElementById("stClass").innerText = data.student.className || "---";
                 document.getElementById("stPhone").innerText = data.student.phone || "---";
+
+                // Đổ thông tin Giáo viên
+                document.getElementById("tcCN").innerText = data.student.teacherCN || "Chưa cập nhật";
+                document.getElementById("tcPho").innerText = data.student.teacherPho || "Chưa cập nhật";
 
                 // Đổ Điểm số
                 const gradesDiv = document.getElementById("gradesList");
