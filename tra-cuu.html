@@ -14,13 +14,26 @@
     .section-box { background: #ffffff; border: 1px solid #e8eaed; border-radius: 10px; padding: 14px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
     .section-title { font-size: 15px; font-weight: 700; color: #1a73e8; margin-top: 0; margin-bottom: 10px; border-bottom: 2px solid #e8f0fe; padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 
+    /* KHU VỰC TẠO THANH CUỘN ĐỘC LẬP */
+    .scrollable-container {
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 4px;
+      -webkit-overflow-scrolling: touch; /* Cho phép cuộn mượt trên iOS */
+    }
+
+    /* Tùy chỉnh thanh cuộn nhỏ gọn */
+    .scrollable-container::-webkit-scrollbar { width: 5px; }
+    .scrollable-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    .scrollable-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
     .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #f1f3f4; font-size: 13px; }
     .info-row:last-child { border-bottom: none; }
     .info-label { color: #5f6368; font-weight: 500; }
     .info-val { color: #202124; font-weight: 600; text-align: right; }
 
-    .custom-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
-    .custom-table th { background: #f8f9fa; color: #3c4043; text-align: left; padding: 8px; border-bottom: 2px solid #dadce0; font-weight: 600; }
+    .custom-table { width: 100%; border-collapse: collapse; margin-top: 2px; font-size: 13px; }
+    .custom-table th { background: #f8f9fa; color: #3c4043; text-align: left; padding: 8px; border-bottom: 2px solid #dadce0; font-weight: 600; position: sticky; top: 0; z-index: 1; }
     .custom-table td { padding: 8px; border-bottom: 1px solid #f1f3f4; color: #202124; }
 
     .badge-present { background: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
@@ -54,29 +67,29 @@
       <div class="info-row"><span class="info-label">Số điện thoại:</span><span class="info-val" id="stSdt"></span></div>
     </div>
 
-    <!-- 2. KẾT QUẢ HỌC TẬP -->
+    <!-- 2. KẾT QUẢ HỌC TẬP (CÓ CUỘN) -->
     <div class="section-box">
       <div class="section-title">📊 KẾT QUẢ HỌC TẬP</div>
-      <div id="gradeContainer"></div>
+      <div id="gradeContainer" class="scrollable-container"></div>
     </div>
 
-    <!-- 3. ĐIỂM DANH CHUYÊN CẦN -->
+    <!-- 3. ĐIỂM DANH CHUYÊN CẦN (CÓ CUỘN) -->
     <div class="section-box">
       <div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>
-      <div id="attendanceContainer"></div>
+      <div id="attendanceContainer" class="scrollable-container"></div>
     </div>
 
-    <!-- 4. GIÁO LÝ VIÊN PHỤ TRÁCH -->
+    <!-- 4. GIÁO LÝ VIÊN PHỤ TRÁCH (CÓ CUỘN) -->
     <div class="section-box">
       <div class="section-title">👨‍🏫 THÔNG TIN GIÁO VIÊN PHỤ TRÁCH</div>
-      <div id="gvListContainer"></div>
+      <div id="gvListContainer" class="scrollable-container"></div>
     </div>
   </div>
 </div>
 
 <script>
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec"; 
-//https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec
+
   function handleResponse(data) {
     if (data && data.status === "success" && data.student) {
       document.getElementById("statusMessage").style.display = "none";
